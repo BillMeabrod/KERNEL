@@ -29,3 +29,7 @@ The project started from [Redux.Templates](https://github.com/KSP2Redux/Redux.Te
 ## Credits
 
 Inspired by [Science Arkive](https://github.com/Kerbalight/ScienceArkive) by leonardfactory. K.E.R.N.E.L is a from-scratch rewrite for Redux, not a port of its code.
+
+## License
+
+[MIT](LICENSE)
