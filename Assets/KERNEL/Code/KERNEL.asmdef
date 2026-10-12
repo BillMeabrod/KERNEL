@@ -4,6 +4,7 @@
   "references": [
     "Unity.Addressables",
     "Unity.ResourceManager",
+    "Unity.TextMeshPro",
     "uitkforksp2.controls.Runtime"
   ],
   "allowUnsafeCode": true,

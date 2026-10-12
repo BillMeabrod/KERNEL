@@ -29,6 +29,11 @@ namespace KERNEL
 
         private Sprite _toolbarIcon;
 
+        public override void OnPreInitialized()
+        {
+            ResearchTab.RegisterPatch(PM);
+        }
+
         public override void OnInitialized()
         {
             Instance = this;
