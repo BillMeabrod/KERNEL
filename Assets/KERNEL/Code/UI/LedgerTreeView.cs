@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using I2.Loc;
 using KERNEL.Ledger;
 using KSP.Game.Science;
 using UnityEngine;
@@ -15,8 +14,6 @@ namespace KERNEL.UI
     /// </summary>
     public class LedgerTreeView
     {
-        private const string UnknownAreaName = "?????";
-
         // Pixel icons that tell row types apart; each maps to a kernel-icon--<name> class in LedgerTree.uss
         private enum RowIcon
         {
@@ -99,7 +96,7 @@ namespace KERNEL.UI
         private static VisualElement BuildUnknownArea(AreaEntry area)
         {
             List<LocationEntry> locations = VisibleLocations(area).ToList();
-            var foldout = new Foldout { text = UnknownAreaName, value = false };
+            var foldout = new Foldout { text = Localization.Translate(Localization.UnknownArea), value = false };
             foldout.AddToClassList("kernel-area");
             foldout.AddToClassList("kernel-area--unknown");
             AddFoldoutIcon(foldout, AreaIcon(area));
@@ -137,7 +134,7 @@ namespace KERNEL.UI
             if (location.IsComplete) row.AddToClassList("kernel-row--complete");
             row.Add(CreateIcon(RowIcon.Flask));
 
-            var name = new Label(Translate(location.Experiment.DisplayName, location.Experiment.ExperimentID));
+            var name = new Label(Localization.Translate(location.Experiment.DisplayName, location.Experiment.ExperimentID));
             name.AddToClassList("kernel-row__name");
             row.Add(name);
 
@@ -205,13 +202,6 @@ namespace KERNEL.UI
         private static IEnumerable<LocationEntry> VisibleLocations(AreaEntry area)
         {
             return area.Locations.Where(location => location.IsUnlocked);
-        }
-
-        private static string Translate(string key, string fallback)
-        {
-            if (string.IsNullOrEmpty(key)) return fallback;
-            string text = LocalizationManager.GetTranslation(key);
-            return string.IsNullOrEmpty(text) ? fallback : text;
         }
     }
 }

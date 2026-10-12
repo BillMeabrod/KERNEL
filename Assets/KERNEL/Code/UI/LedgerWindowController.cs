@@ -13,8 +13,6 @@ namespace KERNEL.UI
     public class LedgerWindowController : MonoBehaviour
     {
         // The full name (Kerbal Experimental Research & Navigation Electronic Ledger) goes on the R&D page
-        private const string Title = "K.E.R.N.E.L";
-
         private PanelRenderer _renderer;
         private LedgerTreeView _tree;
 
@@ -30,7 +28,7 @@ namespace KERNEL.UI
             renderer.OnWindowRoot(root =>
             {
                 var shell = root.Q<AppShell>("ledger-window");
-                shell.Title = Title;
+                shell.Title = Localization.Translate(Localization.Title);
                 shell.CloseClicked += () => SetOpen(false);
                 _tree = new LedgerTreeView(root.Q<ScrollView>("ledger-tree"));
                 if (_pendingLedger != null)

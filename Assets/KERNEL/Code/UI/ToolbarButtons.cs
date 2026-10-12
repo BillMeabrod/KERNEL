@@ -24,8 +24,6 @@ namespace KERNEL.UI
         public const string OabButtonId = "BTN-KERNEL-OAB";
         public const string FlightButtonId = "BTN-KERNEL-Flight";
 
-        private const string Tooltip = "K.E.R.N.E.L";
-
         private const string OabBarPath = "OAB(Clone)/HUDSpawner/HUD/widget_SideBar/widget_sidebarNav";
         private const string FlightBarPath =
             "GameManager/Default Game Instance(Clone)/UI Manager(Clone)/Scaled Popup Canvas/Container/ButtonBar";
@@ -51,7 +49,7 @@ namespace KERNEL.UI
 
             var iconImage = button.GetComponent<Image>();
             SetIcon(button, iconImage, icon);
-            button.GetComponent<ObjectAssemblyBuilderTooltipDisplay>()?.SetTooltipText(Tooltip);
+            button.GetComponent<ObjectAssemblyBuilderTooltipDisplay>()?.SetTooltipText(Localization.Translate(Localization.Title));
 
             FinishWithToggle(button, OabButtonId, onToggled, logger);
         }
@@ -67,7 +65,7 @@ namespace KERNEL.UI
             if (iconImage != null) SetIcon(button, iconImage, icon);
 
             BasicTextTooltipData tooltip = button.GetComponent<BasicTextTooltipData>();
-            if (tooltip != null) tooltip.TooltipTitleKey = Tooltip;
+            if (tooltip != null) tooltip.TooltipTitleKey = Localization.Title;
 
             FinishWithProperty(button, FlightButtonId, onToggled, logger);
         }

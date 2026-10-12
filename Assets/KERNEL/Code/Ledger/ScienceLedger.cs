@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using I2.Loc;
 using KSP.Game;
 using KSP.Game.Science;
 using KSP.Modules;
@@ -104,7 +103,7 @@ namespace KERNEL.Ledger
                 var bodyEntry = new BodyEntry
                 {
                     BodyName = pair.Key,
-                    DisplayName = Translate(body.bodyDisplayName, pair.Key),
+                    DisplayName = Localization.Translate(body.bodyDisplayName, pair.Key),
                     IsStar = isStar,
                     IsDiscovered = firsts?.SOIReached.ContainsKey(pair.Key) ?? false,
                     ParentName = orbit.Parent ?? string.Empty,
@@ -187,13 +186,6 @@ namespace KERNEL.Ledger
         {
             if (a.IsStar != b.IsStar) return a.IsStar ? -1 : 1;
             return a.SemiMajorAxis.CompareTo(b.SemiMajorAxis);
-        }
-
-        private static string Translate(string key, string fallback)
-        {
-            if (string.IsNullOrEmpty(key)) return fallback;
-            string text = LocalizationManager.GetTranslation(key);
-            return string.IsNullOrEmpty(text) ? fallback : text;
         }
 
         private class BuildContext
