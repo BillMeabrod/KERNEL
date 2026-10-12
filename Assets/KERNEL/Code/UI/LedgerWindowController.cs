@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using KERNEL.Ledger;
 using UitkForKsp2.API;
@@ -12,7 +13,6 @@ namespace KERNEL.UI
     /// </summary>
     public class LedgerWindowController : MonoBehaviour
     {
-        // The full name (Kerbal Experimental Research & Navigation Electronic Ledger) goes on the R&D page
         private PanelRenderer _renderer;
         private LedgerTreeView _tree;
 
@@ -20,6 +20,11 @@ namespace KERNEL.UI
         private IEnumerable<BodyEntry> _pendingLedger;
 
         public bool IsOpen { get; private set; }
+
+        /// <summary>
+        /// Raised when the window opens or closes, before it's shown or hidden.
+        /// </summary>
+        public event Action<bool> OpenChanged;
 
         public void Initialize(PanelRenderer renderer)
         {
@@ -54,6 +59,7 @@ namespace KERNEL.UI
             // The toolbar buttons call back into here when we update them below
             if (open == IsOpen) return;
             IsOpen = open;
+            OpenChanged?.Invoke(open);
 
             if (open) _renderer.Show();
             else _renderer.Hide();
