@@ -1,4 +1,7 @@
+using System.Linq;
+using KERNEL.Ledger;
 using KERNEL.UI;
+using KSP.Messages;
 using Redux.ExtraModTypes;
 using SpaceWarp2.UI.API.Appbar;
 using UitkForKsp2.API;
@@ -21,11 +24,37 @@ namespace KERNEL
 
         public LedgerWindowController LedgerWindow { get; private set; }
 
+        public ScienceLedger Ledger { get; private set; }
+
         public override void OnInitialized()
         {
             Instance = this;
+            Ledger = new ScienceLedger(SWLogger);
+
+            if (Messages != null)
+                Messages.PersistentSubscribe<GameLoadFinishedMessage>(OnGameLoadFinished);
+            else
+                SWLogger.LogError("Message center isn't available; the ledger won't update");
+
             Assets.Load<VisualTreeAsset>(WindowAddress, CreateWindow);
             Assets.Load<Texture2D>(IconAddress, RegisterAppBarButtons);
+        }
+
+        private void OnGameLoadFinished(MessageCenterMessage message)
+        {
+            if (!Ledger.Rebuild(Game)) return;
+
+            // Temporary: summary to check the ledger against a known save until the UI shows it
+            SWLogger.LogInfo($"Ledger built: {Ledger.Bodies.Count} bodies");
+            foreach (BodyEntry body in Ledger.Bodies)
+            {
+                int locations = body.Experiments.Sum(e => e.Locations.Count);
+                int unlocked = body.Experiments.Count(e => e.IsUnlocked);
+                SWLogger.LogInfo(
+                    $"  {body.BodyName}{(body.IsDiscovered ? "" : " (not visited)")}: {body.RegionCount} regions, " +
+                    $"{body.Experiments.Count} experiments ({unlocked} unlocked), {locations} locations, " +
+                    $"{body.Earned:0.#} / {body.Possible:0.#} science");
+            }
         }
 
         private void CreateWindow(VisualTreeAsset uxml)
