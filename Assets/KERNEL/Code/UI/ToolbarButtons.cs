@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using KSP.Api.CoreTypes;
 using KSP.OAB;
 using KSP.UI;
@@ -18,7 +17,7 @@ namespace KERNEL.UI
     /// Puts KERNEL's button directly on the stock VAB and flight toolbars, rather than in SpaceWarp's app tray.
     /// Each is a clone of the stock button whose clipboard icon ours should match (so it inherits that button's
     /// size and state visuals), with the stock behaviour stripped and the icon swapped for ours. Both toolbars
-    /// size themselves to their buttons, so they grow to fit.
+    /// size themselves to their buttons, so they grow to fit. Called when Redux reports a toolbar has been built.
     /// </summary>
     public static class ToolbarButtons
     {
@@ -39,22 +38,11 @@ namespace KERNEL.UI
         // The visible icon is this image nested inside Content/GRP-icon
         private const string FlightIconName = "ICO-asset";
 
-        // Scene UI is built after the scene switch; stop waiting if the toolbar never shows up
-        private const float WaitTimeout = 30f;
-
-        public static IEnumerator AddToVab(Sprite icon, Action<bool> onToggled, ILogger logger)
+        public static void AddToVab(Sprite icon, Action<bool> onToggled, ILogger logger)
         {
-            Transform bar = null;
-            yield return WaitForChild(OabBarPath, OabTemplate, found => bar = found);
-            if (bar == null)
-            {
-                logger.LogError("Couldn't find the VAB toolbar; the K.E.R.N.E.L button won't be shown");
-                yield break;
-            }
+            Transform template = FindTemplate(OabBarPath, OabTemplate, OabButtonId, "VAB", logger);
+            if (template == null) return;
 
-            if (bar.Find(OabButtonId) != null) yield break;
-
-            Transform template = bar.Find(OabTemplate);
             GameObject button = CloneButton(template, OabButtonId);
 
             // Children are the Engineer's Report's warning badge
@@ -68,19 +56,11 @@ namespace KERNEL.UI
             FinishWithToggle(button, OabButtonId, onToggled, logger);
         }
 
-        public static IEnumerator AddToFlight(Sprite icon, Action<bool> onToggled, ILogger logger)
+        public static void AddToFlight(Sprite icon, Action<bool> onToggled, ILogger logger)
         {
-            Transform bar = null;
-            yield return WaitForChild(FlightBarPath, FlightTemplate, found => bar = found);
-            if (bar == null)
-            {
-                logger.LogError("Couldn't find the flight toolbar; the K.E.R.N.E.L button won't be shown");
-                yield break;
-            }
+            Transform template = FindTemplate(FlightBarPath, FlightTemplate, FlightButtonId, "flight", logger);
+            if (template == null) return;
 
-            if (bar.Find(FlightButtonId) != null) yield break;
-
-            Transform template = bar.Find(FlightTemplate);
             GameObject button = CloneButton(template, FlightButtonId);
 
             var iconImage = FindDeep(button.transform, FlightIconName)?.GetComponent<Image>();
@@ -104,20 +84,18 @@ namespace KERNEL.UI
             return null;
         }
 
-        private static IEnumerator WaitForChild(string barPath, string childName, Action<Transform> found)
+        // The stock button to clone, or null if the toolbar is missing or already has our button
+        private static Transform FindTemplate(string barPath, string templateName, string id, string barName, ILogger logger)
         {
-            float giveUpAt = Time.unscaledTime + WaitTimeout;
-            while (Time.unscaledTime < giveUpAt)
+            Transform bar = GameObject.Find(barPath)?.transform;
+            Transform template = bar != null ? bar.Find(templateName) : null;
+            if (template == null)
             {
-                GameObject bar = GameObject.Find(barPath);
-                if (bar != null && bar.transform.Find(childName) != null)
-                {
-                    found(bar.transform);
-                    yield break;
-                }
-
-                yield return null;
+                logger.LogError($"Couldn't find the {barName} toolbar; the K.E.R.N.E.L button won't be shown");
+                return null;
             }
+
+            return bar.Find(id) == null ? template : null;
         }
 
         private static GameObject CloneButton(Transform template, string id)

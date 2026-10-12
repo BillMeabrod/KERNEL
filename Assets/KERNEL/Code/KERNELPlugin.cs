@@ -4,6 +4,7 @@ using KERNEL.UI;
 using KSP.Game;
 using KSP.Messages;
 using Redux.ExtraModTypes;
+using SpaceWarp2.UI.Backend.UI.Appbar;
 using UitkForKsp2.API;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -59,6 +60,17 @@ namespace KERNEL
                 SWLogger.LogError("Message center isn't available; the ledger won't update");
             }
 
+            // Redux builds each toolbar fresh on entering its scene, then raises these
+            if (IAppbarBackend.Instance != null)
+            {
+                IAppbarBackend.Instance.AppBarOABSubscriber.AddListener(AddVabButton);
+                IAppbarBackend.Instance.AppBarInFlightSubscriber.AddListener(AddFlightButton);
+            }
+            else
+            {
+                SWLogger.LogError("App bar backend isn't available; the toolbar buttons won't be shown");
+            }
+
             Assets.Load<VisualTreeAsset>(WindowAddress, CreateWindow);
             Assets.Load<Texture2D>(ToolbarIconAddress, texture => _toolbarIcon = CreateIcon(texture, ToolbarIconAddress));
         }
@@ -94,18 +106,22 @@ namespace KERNEL
         {
             if (message is GameStateChangedMessage stateChanged)
             {
-                // Like stock windows, close when changing scene (building)
+                // Like stock windows, close when changing scene (building), including changes without a curtain
                 if (!(FlightStates.Contains(stateChanged.PreviousState) && FlightStates.Contains(stateChanged.CurrentState)))
                     LedgerWindow?.SetOpen(false);
-
-                // Each scene builds its toolbar fresh, so add the button on entering it
-                if (stateChanged.CurrentState == GameState.VehicleAssemblyBuilder && _toolbarIcon != null)
-                    StartCoroutine(ToolbarButtons.AddToVab(_toolbarIcon, SetWindowOpen, SWLogger));
-                else if (FlightStates.Contains(stateChanged.CurrentState) && _toolbarIcon != null)
-                    StartCoroutine(ToolbarButtons.AddToFlight(_toolbarIcon, SetWindowOpen, SWLogger));
             }
 
             MarkLedgerStale(message);
+        }
+
+        private void AddVabButton()
+        {
+            if (_toolbarIcon != null) ToolbarButtons.AddToVab(_toolbarIcon, SetWindowOpen, SWLogger);
+        }
+
+        private void AddFlightButton()
+        {
+            if (_toolbarIcon != null) ToolbarButtons.AddToFlight(_toolbarIcon, SetWindowOpen, SWLogger);
         }
 
         private void MarkLedgerStale(MessageCenterMessage message)
@@ -119,6 +135,11 @@ namespace KERNEL
 
         private void Update()
         {
+            // Like Redux's tracking station panel, get out of the way as soon as the loading curtain starts
+            // closing; the scene change itself is only announced once loading is done
+            if (LedgerWindow != null && LedgerWindow.IsOpen && Game != null && Game.UI != null && Game.UI.GetCurtainVisibility())
+                LedgerWindow.SetOpen(false);
+
             if (_ledgerStale && LedgerWindow != null && LedgerWindow.IsOpen && Time.unscaledTime >= _rebuildAt)
                 RebuildLedger();
         }
