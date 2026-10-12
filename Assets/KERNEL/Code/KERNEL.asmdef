@@ -3,7 +3,8 @@
   "rootNamespace": "KERNEL",
   "references": [
     "Unity.Addressables",
-    "Unity.ResourceManager"
+    "Unity.ResourceManager",
+    "uitkforksp2.controls.Runtime"
   ],
   "allowUnsafeCode": true,
   "overrideReferences": true,

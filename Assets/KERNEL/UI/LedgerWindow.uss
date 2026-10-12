@@ -1,0 +1,26 @@
+#ledger-window {
+    width: 720px;
+    height: 480px;
+}
+
+#ledger-body {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+/* Left column: one entry per celestial body */
+#planet-list {
+    width: 210px;
+    margin-right: 6px;
+}
+
+/* Right side: experiments for the selected body */
+#detail-panel {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+#detail-placeholder {
+    color: rgb(150, 155, 165);
+}

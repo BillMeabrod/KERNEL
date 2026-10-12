@@ -1,28 +1,58 @@
+using KERNEL.UI;
 using Redux.ExtraModTypes;
 using SpaceWarp2.UI.API.Appbar;
+using UitkForKsp2.API;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace KERNEL
 {
     public class KERNELPlugin : KerbalMod
     {
-        // Addressable key of the App Bar icon, set on the icon asset in the KERNEL Addressables group
+        // Addressable keys, set on the assets in the KERNEL Addressables group
         private const string IconAddress = "KERNEL/icon.png";
+        private const string WindowAddress = "KERNEL/LedgerWindow.uxml";
 
-        // App Bar button IDs, one per scene the button appears in
+        // App Bar button IDs, one per scene the button appears in. The KSC gets an R&D page button instead.
         private const string FlightButtonId = "BTN-KERNEL-Flight";
         private const string OabButtonId = "BTN-KERNEL-OAB";
-        private const string KscButtonId = "BTN-KERNEL-KSC";
 
         public static KERNELPlugin Instance { get; private set; }
 
-        // Placeholder until the ledger window exists
-        public bool IsWindowOpen { get; private set; }
+        public LedgerWindowController LedgerWindow { get; private set; }
 
         public override void OnInitialized()
         {
             Instance = this;
+            Assets.Load<VisualTreeAsset>(WindowAddress, CreateWindow);
             Assets.Load<Texture2D>(IconAddress, RegisterAppBarButtons);
+        }
+
+        private void CreateWindow(VisualTreeAsset uxml)
+        {
+            if (uxml == null)
+            {
+                SWLogger.LogError($"Could not load ledger window '{WindowAddress}'");
+                return;
+            }
+
+            var options = new WindowOptions
+            {
+                WindowId = "KERNEL_LedgerWindow",
+                // Created under the main canvas
+                Parent = null,
+                // F2 hides it with the rest of the UI
+                IsHidingEnabled = true,
+                // Follows the game's UI scale setting
+                UseStockScale = true,
+                DisableGameInputForTextFields = true,
+                BringToFrontOnPointerDown = true,
+                MoveOptions = new MoveOptions { IsMovingEnabled = true, CheckScreenBounds = true }
+            };
+
+            PanelRenderer renderer = Window.Create(options, uxml).EnableUiSounds();
+            LedgerWindow = renderer.gameObject.AddComponent<LedgerWindowController>();
+            LedgerWindow.Initialize(renderer, FlightButtonId, OabButtonId);
         }
 
         private void RegisterAppBarButtons(Texture2D icon)
@@ -39,16 +69,19 @@ namespace KERNEL
             Appbar.RegisterAppButton(name, FlightButtonId, icon, SetWindowOpen);
             // VAB
             Appbar.RegisterOABAppButton(name, OabButtonId, icon, SetWindowOpen);
-            // KSC: plain click, so toggle ourselves
-            Appbar.RegisterKSCAppButton(name, KscButtonId, icon, () => SetWindowOpen(!IsWindowOpen));
 
             SWLogger.LogInfo("Registered App Bar buttons");
         }
 
         private void SetWindowOpen(bool isOpen)
         {
-            IsWindowOpen = isOpen;
-            SWLogger.LogInfo($"Ledger window {(isOpen ? "opened" : "closed")}");
+            if (LedgerWindow == null)
+            {
+                SWLogger.LogWarning("Ledger window isn't loaded yet");
+                return;
+            }
+
+            LedgerWindow.SetOpen(isOpen);
         }
     }
 }
