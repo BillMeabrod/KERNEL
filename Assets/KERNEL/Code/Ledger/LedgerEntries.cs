@@ -20,7 +20,11 @@ namespace KERNEL.Ledger
     /// </summary>
     public class LocationEntry
     {
+        public ExperimentDefinition Experiment;
         public ResearchLocation Location;
+
+        // Whether the player has researched a part that can run this experiment
+        public bool IsUnlocked;
 
         // Discoverable regions are hidden until a vessel reaches them; normal regions are always discovered
         public bool IsDiscoverable;
@@ -32,26 +36,44 @@ namespace KERNEL.Ledger
 
         public float Possible => (Data?.Possible ?? 0f) + (Sample?.Possible ?? 0f);
         public float Earned => (Data?.Earned ?? 0f) + (Sample?.Earned ?? 0f);
+        public bool HasSubmissions => (Data?.IsSubmitted ?? false) || (Sample?.IsSubmitted ?? false);
+        public bool IsComplete => (Data?.IsSubmitted ?? true) && (Sample?.IsSubmitted ?? true);
     }
 
-    public class ExperimentEntry
+    /// <summary>
+    /// A place within a body's sphere of influence that has experiments: an orbit, the atmosphere as a whole,
+    /// or a biome (science region). Locations that don't depend on biome live in the situation's area.
+    /// </summary>
+    public class AreaEntry
     {
-        public ExperimentDefinition Definition;
-        public bool IsUnlocked;
+        // Region ID, or the situation name for whole-body areas
+        public string Id;
+        public string DisplayName;
+
+        // Every body has orbits, so they're never a spoiler
+        public bool IsOrbit;
+
+        // Results here are the same anywhere on the body (no biome)
+        public bool IsWholeBody;
+
         public List<LocationEntry> Locations = new();
 
-        public float Possible => Locations.Sum(l => l.Possible);
-        public float Earned => Locations.Sum(l => l.Earned);
+        public bool HasSubmissions => Locations.Any(l => l.HasSubmissions);
     }
 
     public class BodyEntry
     {
         public string BodyName;
+        public string DisplayName;
+        public bool IsStar;
         public bool IsDiscovered;
-        public int RegionCount;
-        public List<ExperimentEntry> Experiments = new();
 
-        public float Possible => Experiments.Sum(e => e.Possible);
-        public float Earned => Experiments.Sum(e => e.Earned);
+        // Empty for bodies orbiting nothing (stars); used to nest planets under stars and moons under planets
+        public string ParentName;
+        // Average distance from the body it orbits; orders siblings innermost first
+        public double SemiMajorAxis;
+
+        public List<AreaEntry> Areas = new();
+        public List<BodyEntry> Children = new();
     }
 }

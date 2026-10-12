@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using I2.Loc;
 using KSP.Game;
 using KSP.Game.Science;
 using KSP.Modules;
@@ -26,6 +27,13 @@ namespace KERNEL.Ledger
         // Discoverables present in the data that can't actually be reached
         private static readonly HashSet<string> HiddenRegionIds = new() { "KerbinGlacier" };
 
+        // Order of the whole-body areas, from the outside in; biomes follow in the game's region order
+        private static readonly ScienceSitutation[] WholeBodyAreaOrder =
+        {
+            ScienceSitutation.HighOrbit, ScienceSitutation.LowOrbit, ScienceSitutation.Atmosphere,
+            ScienceSitutation.Splashed, ScienceSitutation.Landed
+        };
+
         // Private game state with no public accessor
         private static readonly FieldInfo BodyRegionsField = typeof(ScienceRegionsDataProvider)
             .GetField("_cbToScienceRegions", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -36,14 +44,18 @@ namespace KERNEL.Ledger
 
         public List<BodyEntry> Bodies { get; } = new();
 
+        // Stars, with their planets nested under them and moons under their planet
+        public List<BodyEntry> Roots { get; } = new();
+
         public ScienceLedger(ILogger logger)
         {
             _logger = logger;
         }
 
-        public bool Rebuild(GameInstance game)
+        public bool Rebuild(GameInstance game, GalaxyOrbits orbits)
         {
             Bodies.Clear();
+            Roots.Clear();
 
             ScienceRegionsDataProvider regionsProvider = game.ScienceManager?.ScienceRegionsDataProvider;
             ScienceExperimentsDataStore experimentsStore = game.ScienceManager?.ScienceExperimentsDataStore;
@@ -87,27 +99,101 @@ namespace KERNEL.Ledger
                     continue;
                 }
 
+                bool isStar = game.CelestialBodies.GetStarStatus(pair.Key);
+                orbits.TryGet(pair.Key, out GalaxyOrbits.Orbit orbit);
                 var bodyEntry = new BodyEntry
                 {
                     BodyName = pair.Key,
+                    DisplayName = Translate(body.bodyDisplayName, pair.Key),
+                    IsStar = isStar,
                     IsDiscovered = firsts?.SOIReached.ContainsKey(pair.Key) ?? false,
-                    RegionCount = pair.Value.Regions?.Length ?? 0
+                    ParentName = orbit.Parent ?? string.Empty,
+                    SemiMajorAxis = orbit.SemiMajorAxis
                 };
 
-                bool isStar = game.CelestialBodies.GetStarStatus(pair.Key);
+                var locations = new List<LocationEntry>();
                 foreach (ExperimentDefinition experiment in experiments)
                 {
-                    ExperimentEntry experimentEntry = BuildExperiment(context, body, isStar, pair.Value, experiment);
-                    if (experimentEntry.Locations.Count == 0) continue;
-
-                    experimentEntry.IsUnlocked = unlockedIds.Contains(experiment.ExperimentID);
-                    bodyEntry.Experiments.Add(experimentEntry);
+                    bool isUnlocked = unlockedIds.Contains(experiment.ExperimentID);
+                    foreach (LocationEntry location in BuildLocations(context, body, isStar, pair.Value, experiment))
+                    {
+                        location.IsUnlocked = isUnlocked;
+                        locations.Add(location);
+                    }
                 }
 
+                bodyEntry.Areas = GroupIntoAreas(pair.Value, locations);
                 Bodies.Add(bodyEntry);
             }
 
+            NestBodies();
             return true;
+        }
+
+        /// <summary>
+        /// Splits a body's locations into areas: one per whole-body situation, then one per biome.
+        /// </summary>
+        private static List<AreaEntry> GroupIntoAreas(CelestialBodyScienceRegionsData scienceData, List<LocationEntry> locations)
+        {
+            var areas = new List<AreaEntry>();
+
+            foreach (ScienceSitutation situation in WholeBodyAreaOrder)
+            {
+                var area = new AreaEntry
+                {
+                    Id = situation.ToString(),
+                    DisplayName = situation.GetTranslatedDescription(),
+                    IsOrbit = situation is ScienceSitutation.HighOrbit or ScienceSitutation.LowOrbit,
+                    IsWholeBody = true
+                };
+                area.Locations.AddRange(locations.Where(l =>
+                    !l.Location.RequiresRegion && l.Location.ScienceSituation == situation));
+                if (area.Locations.Count > 0) areas.Add(area);
+            }
+
+            foreach (ScienceRegionDefinition region in scienceData.Regions ?? Array.Empty<ScienceRegionDefinition>())
+            {
+                var area = new AreaEntry
+                {
+                    Id = region.Id,
+                    DisplayName = ScienceRegionsHelper.GetRegionDisplayName(region.Id)
+                };
+                area.Locations.AddRange(locations.Where(l =>
+                    l.Location.RequiresRegion && l.Location.ScienceRegion == region.Id));
+                if (area.Locations.Count > 0) areas.Add(area);
+            }
+
+            return areas;
+        }
+
+        private void NestBodies()
+        {
+            Dictionary<string, BodyEntry> byName = Bodies.ToDictionary(b => b.BodyName);
+            foreach (BodyEntry body in Bodies)
+            {
+                if (byName.TryGetValue(body.ParentName, out BodyEntry parent))
+                    parent.Children.Add(body);
+                else
+                    Roots.Add(body);
+            }
+
+            Roots.Sort(CompareBodies);
+            foreach (BodyEntry body in Bodies)
+                body.Children.Sort(CompareBodies);
+        }
+
+        // Stars first, then outward from what they orbit
+        private static int CompareBodies(BodyEntry a, BodyEntry b)
+        {
+            if (a.IsStar != b.IsStar) return a.IsStar ? -1 : 1;
+            return a.SemiMajorAxis.CompareTo(b.SemiMajorAxis);
+        }
+
+        private static string Translate(string key, string fallback)
+        {
+            if (string.IsNullOrEmpty(key)) return fallback;
+            string text = LocalizationManager.GetTranslation(key);
+            return string.IsNullOrEmpty(text) ? fallback : text;
         }
 
         private class BuildContext
@@ -118,10 +204,10 @@ namespace KERNEL.Ledger
             public float ScienceMultiplier;
         }
 
-        private ExperimentEntry BuildExperiment(BuildContext context, CelestialBodyData body, bool isStar,
+        private List<LocationEntry> BuildLocations(BuildContext context, CelestialBodyData body, bool isStar,
             CelestialBodyScienceRegionsData scienceData, ExperimentDefinition experiment)
         {
-            var entry = new ExperimentEntry { Definition = experiment };
+            var entries = new List<LocationEntry>();
             ScienceRegionDefinition[] regions = scienceData.Regions ?? Array.Empty<ScienceRegionDefinition>();
 
             foreach (ScienceSitutation situation in Enum.GetValues(typeof(ScienceSitutation)))
@@ -139,7 +225,7 @@ namespace KERNEL.Ledger
 
                 if (!regionRequired)
                 {
-                    entry.Locations.Add(BuildLocation(context, scienceData, experiment, bodyWide));
+                    entries.Add(BuildLocation(context, scienceData, experiment, bodyWide));
                     continue;
                 }
 
@@ -151,17 +237,17 @@ namespace KERNEL.Ledger
                     // Some locations have negative scalars (e.g. Kerbin beaches while splashed); the game never offers them
                     if (GetLocationScalar(scienceData, location) < 0f) continue;
 
-                    entry.Locations.Add(BuildLocation(context, scienceData, experiment, location));
+                    entries.Add(BuildLocation(context, scienceData, experiment, location));
                 }
             }
 
-            return entry;
+            return entries;
         }
 
         private LocationEntry BuildLocation(BuildContext context, CelestialBodyScienceRegionsData scienceData,
             ExperimentDefinition experiment, ResearchLocation location)
         {
-            var entry = new LocationEntry { Location = location, IsDiscovered = true };
+            var entry = new LocationEntry { Experiment = experiment, Location = location, IsDiscovered = true };
 
             if (location.RequiresRegion)
             {

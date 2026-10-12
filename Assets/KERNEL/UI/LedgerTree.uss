@@ -1,0 +1,99 @@
+/* Ledger tree (LedgerTreeView), shared by every host. Everything is scoped under .kernel-ledger. */
+
+/* Let the foldout title take the free space so the science totals sit on the right */
+.kernel-ledger .unity-foldout__input {
+    flex-grow: 1;
+}
+
+.kernel-ledger .unity-foldout__text {
+    flex-grow: 1;
+}
+
+/* Body and area rows match the stock Parts Manager's category rows (~50px apart, 24px icons) */
+.kernel-ledger .unity-foldout__toggle {
+    min-height: 50px;
+}
+
+/* Experiment rows are details under a header, so a bit shorter */
+.kernel-ledger .kernel-row {
+    min-height: 40px;
+}
+
+/* Centre the arrow, icon and title vertically in the taller rows */
+.kernel-ledger .unity-foldout__input {
+    align-items: center;
+}
+
+/* Pixel icon before each name, telling apart stars, bodies, orbits, atmosphere, surface and experiments */
+.kernel-ledger .kernel-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    align-self: center;
+    margin-right: 8px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.kernel-ledger .kernel-icon--flask {
+    background-image: url("Icons/flask.png");
+}
+
+.kernel-ledger .kernel-icon--star {
+    background-image: url("Icons/star.png");
+}
+
+.kernel-ledger .kernel-icon--planet {
+    background-image: url("Icons/planet.png");
+}
+
+.kernel-ledger .kernel-icon--orbit {
+    background-image: url("Icons/orbit.png");
+}
+
+.kernel-ledger .kernel-icon--cloud {
+    background-image: url("Icons/cloud.png");
+}
+
+.kernel-ledger .kernel-icon--horizon {
+    background-image: url("Icons/horizon.png");
+}
+
+.kernel-ledger .kernel-value {
+    margin-left: 8px;
+    -unity-text-align: middle-right;
+    color: rgb(150, 155, 165);
+}
+
+.kernel-ledger .kernel-row {
+    flex-direction: row;
+    align-items: center;
+    padding-left: 18px;
+}
+
+.kernel-ledger .kernel-row__name {
+    flex-grow: 1;
+}
+
+.kernel-ledger .kernel-row__situation {
+    margin-left: 8px;
+    color: rgb(231, 202, 118);
+}
+
+/* "?????" areas: a regular area row whose arrow is replaced by a "-" since it can't be opened */
+.kernel-ledger .kernel-area--unknown .unity-foldout__checkmark {
+    background-image: none;
+    rotate: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.kernel-ledger .kernel-area--unknown__dash {
+    padding: 0;
+    margin: 0;
+    -unity-text-align: middle-center;
+}
+
+/* Every report for this experiment at this location has been submitted */
+.kernel-ledger .kernel-row--complete .kernel-row__name {
+    color: rgb(120, 200, 140);
+}

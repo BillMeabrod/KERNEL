@@ -1,12 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="LedgerWindow.uss" />
-    <!-- Title is set from code: it needs rich-text bold initials, so uppercase-title is off and the text is pre-capitalised -->
-    <UitkForKsp2.Controls.AppShell name="ledger-window" icon-address="KERNEL/icon.png" uppercase-title="false">
-        <ui:VisualElement name="ledger-body">
-            <ui:ScrollView name="planet-list" />
-            <ui:VisualElement name="detail-panel">
-                <ui:Label name="detail-placeholder" text="Select a celestial body" />
-            </ui:VisualElement>
-        </ui:VisualElement>
+    <Style src="LedgerTree.uss" />
+    <!-- Title is set from code -->
+    <UitkForKsp2.Controls.AppShell name="ledger-window" icon-address="KERNEL/icon.png">
+        <!-- Filled by LedgerTreeView -->
+        <ui:ScrollView name="ledger-tree" class="kernel-ledger" />
     </UitkForKsp2.Controls.AppShell>
 </ui:UXML>

@@ -1,4 +1,3 @@
-using System.Linq;
 using KERNEL.Ledger;
 using KERNEL.UI;
 using KSP.Messages;
@@ -26,6 +25,8 @@ namespace KERNEL
 
         public ScienceLedger Ledger { get; private set; }
 
+        private GalaxyOrbits _orbits;
+
         public override void OnInitialized()
         {
             Instance = this;
@@ -42,19 +43,37 @@ namespace KERNEL
 
         private void OnGameLoadFinished(MessageCenterMessage message)
         {
-            if (!Ledger.Rebuild(Game)) return;
-
-            // Temporary: summary to check the ledger against a known save until the UI shows it
-            SWLogger.LogInfo($"Ledger built: {Ledger.Bodies.Count} bodies");
-            foreach (BodyEntry body in Ledger.Bodies)
+            // Orbit parents and distances come from the save's galaxy definition, which only changes with the galaxy
+            string galaxyKey = Game.SessionManager.ActiveGalaxyDefinitionKey;
+            if (_orbits != null && _orbits.Key == galaxyKey)
             {
-                int locations = body.Experiments.Sum(e => e.Locations.Count);
-                int unlocked = body.Experiments.Count(e => e.IsUnlocked);
-                SWLogger.LogInfo(
-                    $"  {body.BodyName}{(body.IsDiscovered ? "" : " (not visited)")}: {body.RegionCount} regions, " +
-                    $"{body.Experiments.Count} experiments ({unlocked} unlocked), {locations} locations, " +
-                    $"{body.Earned:0.#} / {body.Possible:0.#} science");
+                RebuildLedger();
+                return;
             }
+
+            Assets.Load<TextAsset>(galaxyKey, asset =>
+            {
+                if (asset == null)
+                {
+                    SWLogger.LogError($"Could not load galaxy definition '{galaxyKey}'; bodies won't be nested or ordered");
+                    _orbits = new GalaxyOrbits(galaxyKey, null);
+                }
+                else
+                {
+                    _orbits = new GalaxyOrbits(galaxyKey, asset.text);
+                    Assets.ReleaseAsset(asset);
+                }
+
+                RebuildLedger();
+            });
+        }
+
+        private void RebuildLedger()
+        {
+            if (!Ledger.Rebuild(Game, _orbits)) return;
+
+            SWLogger.LogInfo($"Ledger built: {Ledger.Bodies.Count} bodies");
+            LedgerWindow?.ShowLedger(Ledger.Roots);
         }
 
         private void CreateWindow(VisualTreeAsset uxml)
