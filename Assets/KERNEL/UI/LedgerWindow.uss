@@ -3,33 +3,6 @@
     height: 640px;
 }
 
-/* Header dash line, rebuilt by LedgerWindowController.KeepHeaderSlashVisible: the dashes sit in a box that
-   clips them from the left (keeping their right end), followed by the "/" with the theme's stock gap. */
-#ledger-window .kernel-header-dashes-clip {
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-direction: row;
-    justify-content: flex-end;
-    overflow: hidden;
-}
-
-#ledger-window .kernel-header-dashes-clip .oab-window-header-dashes {
-    flex-grow: 0;
-    flex-shrink: 0;
-    margin-right: 0;
-}
-
-#ledger-window .kernel-header-slash {
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-
-/* With our long title the header ran out of room and squeezed the close button's container to ~2px, so the
-   24px button spilled left over the "/". Stock titles never get there; keep the container at full size. */
-#ledger-window .oab-window-close-container {
-    flex-shrink: 0;
-}
-
 #ledger-tree {
     flex-grow: 1;
 }

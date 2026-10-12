@@ -32,8 +32,6 @@ namespace KERNEL.UI
                 var shell = root.Q<AppShell>("ledger-window");
                 shell.Title = Title;
                 shell.CloseClicked += () => SetOpen(false);
-                KeepHeaderSlashVisible(shell);
-
                 _tree = new LedgerTreeView(root.Q<ScrollView>("ledger-tree"));
                 if (_pendingLedger != null)
                 {
@@ -43,31 +41,6 @@ namespace KERNEL.UI
             });
 
             renderer.Hide();
-        }
-
-        /// <summary>
-        /// AppShell draws the header's "-----/" as one label. With our long title that text overflows its box
-        /// and the "/" lands under the close button. Stock headers (e.g. the Engineer's Report) keep the "/" a
-        /// fixed gap before the close button, so put the dashes in a box that clips them while keeping their
-        /// right end, and draw the "/" as its own label after it.
-        /// </summary>
-        private static void KeepHeaderSlashVisible(AppShell shell)
-        {
-            Label dashes = shell.Q<Label>("header-dashes");
-            if (dashes == null) return;
-
-            VisualElement header = dashes.parent;
-            var clip = new VisualElement();
-            clip.AddToClassList("kernel-header-dashes-clip");
-            header.Insert(header.IndexOf(dashes), clip);
-            clip.Add(dashes);
-
-            shell.Dashes = shell.Dashes.TrimEnd('/');
-
-            var slash = new Label("/");
-            slash.AddToClassList("oab-window-header-dashes");
-            slash.AddToClassList("kernel-header-slash");
-            header.Insert(header.IndexOf(clip) + 1, slash);
         }
 
         public void ShowLedger(IEnumerable<BodyEntry> roots)
