@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9065a46703c44e8fabd263388eaeb6e7, type: 3}
+  m_Name: KERNEL
+  m_EditorClassIdentifier: ksp2community.ksp2unitytools.editor::Ksp2UnityTools.Editor.Modding.Mod
+  id: KERNEL
+  name: KERNEL
+  author: nobody
+  description: A sample mod for KSP2
+  version: 0.1.0
+  versionCheck: 
+  minKsp2Version: '*'
+  maxKsp2Version: '*'
+  source: 
+  allGroup: {fileID: 11400000, guid: 70b51e618f005a3469e8f9edee42fe30, type: 2}
+  partsGroup: {fileID: 11400000, guid: 550368b3e708b7c44a25c1d1636aec91, type: 2}
+  missionsGroup: {fileID: 11400000, guid: 05bb842d4032e4d46ad9c189f6f67cbe, type: 2}
+  celestialBodiesGroup: {fileID: 11400000, guid: 0d7b519979b5c944e87a16f89f9c5513, type: 2}
+  scienceExperimentGroup: {fileID: 11400000, guid: 613aed5c0b864aa4b95731715c4395d6, type: 2}
+  techNodeDataGroup: {fileID: 11400000, guid: 525b215494a6a9549933986f83cf66bb, type: 2}
+  resourcesGroup: {fileID: 11400000, guid: f757aa4ef1f4ddc44bf6bcbf594e8b6d, type: 2}
+  addressablesProfileId: 2cac53e31f9c8f048a284c3050640835
+  dependencies:
+  - id: SpaceWarp2
+    min: 2.0.0
+    max: '*'
+  incompatibilities: []
