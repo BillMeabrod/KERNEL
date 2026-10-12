@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: addressables_KERNEL_all
   m_GUID: e969d7aea854f004aa25f4eb21504cdf
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 50adb6440fafc8443941150c59bc9080
+    m_Address: KERNEL/icon.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 87091f8f6983b3845a0038f3906915df, type: 2}
   m_SchemaSet:

@@ -1,28 +1,54 @@
-using SpaceWarp2.API.Mods;
+using Redux.ExtraModTypes;
+using SpaceWarp2.UI.API.Appbar;
+using UnityEngine;
+
 namespace KERNEL
 {
-    /* Extend KerbalMod instead if you need the MonoBehaviour update loop/references to game stuff like SW 1.x mods */
-    public class KERNELPlugin : GeneralMod
+    public class KERNELPlugin : KerbalMod
     {
-        public override void OnPreInitialized() {
-            /*
-                Code that runs before addressables/assets are loaded goes here
-                This is where you want to register loading actions or other such things 
-            */
+        // Addressable key of the App Bar icon, set on the icon asset in the KERNEL Addressables group
+        private const string IconAddress = "KERNEL/icon.png";
+
+        // App Bar button IDs, one per scene the button appears in
+        private const string FlightButtonId = "BTN-KERNEL-Flight";
+        private const string OabButtonId = "BTN-KERNEL-OAB";
+        private const string KscButtonId = "BTN-KERNEL-KSC";
+
+        public static KERNELPlugin Instance { get; private set; }
+
+        // Placeholder until the ledger window exists
+        public bool IsWindowOpen { get; private set; }
+
+        public override void OnInitialized()
+        {
+            Instance = this;
+            Assets.Load<Texture2D>(IconAddress, RegisterAppBarButtons);
         }
 
-        public override void OnInitialized() {
-            /*
-                Code that runs after addressables/assets are loaded goes here
-                You are also generally free to interact with game code here
-            */
-            SWLogger.LogInfo("Hello World!");
+        private void RegisterAppBarButtons(Texture2D icon)
+        {
+            if (icon == null)
+            {
+                SWLogger.LogError($"Could not load App Bar icon '{IconAddress}'");
+                return;
+            }
+
+            string name = SWMetadata.Name;
+
+            // Flight and Map view
+            Appbar.RegisterAppButton(name, FlightButtonId, icon, SetWindowOpen);
+            // VAB
+            Appbar.RegisterOABAppButton(name, OabButtonId, icon, SetWindowOpen);
+            // KSC: plain click, so toggle ourselves
+            Appbar.RegisterKSCAppButton(name, KscButtonId, icon, () => SetWindowOpen(!IsWindowOpen));
+
+            SWLogger.LogInfo("Registered App Bar buttons");
         }
 
-        public override void OnPostInitialized() {
-            /*
-                Code that runs after all mods have been initialized goes here
-            */
+        private void SetWindowOpen(bool isOpen)
+        {
+            IsWindowOpen = isOpen;
+            SWLogger.LogInfo($"Ledger window {(isOpen ? "opened" : "closed")}");
         }
     }
 }

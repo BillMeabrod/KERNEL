@@ -1,6 +1,10 @@
 {
   "name": "KERNEL",
   "rootNamespace": "KERNEL",
+  "references": [
+    "Unity.Addressables",
+    "Unity.ResourceManager"
+  ],
   "allowUnsafeCode": true,
   "overrideReferences": true,
   "precompiledReferences": [

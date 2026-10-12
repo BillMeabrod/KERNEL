@@ -69,6 +69,8 @@ crashlytics-build.properties
 
 # Packed Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+# Per-platform build state folder; its only content (the .bin above) is ignored
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/Windows.meta
 
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
