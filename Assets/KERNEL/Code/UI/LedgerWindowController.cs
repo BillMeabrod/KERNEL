@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using KERNEL.Ledger;
-using KSP.UI.Binding;
 using UitkForKsp2.API;
 using UitkForKsp2.Controls;
 using UnityEngine;
@@ -17,7 +16,6 @@ namespace KERNEL.UI
         private const string Title = "K.E.R.N.E.L";
 
         private PanelRenderer _renderer;
-        private string[] _appBarButtonIds;
         private LedgerTreeView _tree;
 
         // Ledger received before the window's root existed
@@ -25,10 +23,9 @@ namespace KERNEL.UI
 
         public bool IsOpen { get; private set; }
 
-        public void Initialize(PanelRenderer renderer, params string[] appBarButtonIds)
+        public void Initialize(PanelRenderer renderer)
         {
             _renderer = renderer;
-            _appBarButtonIds = appBarButtonIds;
 
             renderer.OnWindowRoot(root =>
             {
@@ -83,15 +80,14 @@ namespace KERNEL.UI
 
         public void SetOpen(bool open)
         {
-            // The App Bar toggles call back into here when we update them below
+            // The toolbar buttons call back into here when we update them below
             if (open == IsOpen) return;
             IsOpen = open;
 
             if (open) _renderer.Show();
             else _renderer.Hide();
 
-            foreach (string id in _appBarButtonIds)
-                GameObject.Find(id)?.GetComponent<UIValue_WriteBool_Toggle>()?.SetValue(open);
+            ToolbarButtons.SetPressed(open);
         }
     }
 }

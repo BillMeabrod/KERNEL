@@ -3,6 +3,7 @@ using System.Linq;
 using I2.Loc;
 using KERNEL.Ledger;
 using KSP.Game.Science;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace KERNEL.UI
@@ -48,9 +49,16 @@ namespace KERNEL.UI
                 _hasShown = true;
             }
 
+            // Rebuilds happen while the window is open (e.g. after scoring a report): keep the scroll position
+            var scrollView = _container as ScrollView;
+            Vector2 scrollOffset = scrollView?.scrollOffset ?? Vector2.zero;
+
             _container.Clear();
             foreach (BodyEntry body in rootList)
                 _container.Add(BuildBody(body));
+
+            // The new content needs a layout pass before the offset can be applied
+            scrollView?.schedule.Execute(() => scrollView.scrollOffset = scrollOffset);
         }
 
         private VisualElement BuildBody(BodyEntry body)
