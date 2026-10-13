@@ -114,7 +114,7 @@ namespace KERNEL
             PanelRenderer renderer = Window.Create(options, uxml).EnableUiSounds();
             LedgerWindow = renderer.gameObject.AddComponent<LedgerWindowController>();
             LedgerWindow.Initialize(renderer);
-            LedgerWindow.OpenChanged += isOpen => Ledger.IsShown = isOpen;
+            LedgerWindow.OpenChanged += isOpen => Ledger.SetShown(LedgerWindow, isOpen);
             if (Ledger.Roots.Count > 0) LedgerWindow.ShowLedger(Ledger.Roots);
         }
 

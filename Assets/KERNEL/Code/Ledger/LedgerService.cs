@@ -20,7 +20,8 @@ namespace KERNEL.Ledger
         private ILogger _logger;
         private ScienceLedger _ledger;
         private GalaxyOrbits _orbits;
-        private bool _isShown;
+        // Whatever is currently showing the ledger
+        private readonly HashSet<object> _viewers = new();
 
         // Set by events that change the ledger; rebuilt while it's shown, otherwise when it's next shown
         private bool _stale;
@@ -38,17 +39,19 @@ namespace KERNEL.Ledger
         public event Action<IEnumerable<BodyEntry>> Rebuilt;
 
         /// <summary>
-        /// Whether the ledger is on screen. While it is, changes are rebuilt as they happen; showing it brings
-        /// it up to date first.
+        /// Whether anything is showing the ledger. While something is, changes are rebuilt as they happen.
         /// </summary>
-        public bool IsShown
+        public bool IsShown => _viewers.Count > 0;
+
+        /// <summary>
+        /// Registers or unregisters something showing the ledger (the window, the R&D page). Showing it brings it
+        /// up to date first.
+        /// </summary>
+        public void SetShown(object viewer, bool shown)
         {
-            get => _isShown;
-            set
-            {
-                _isShown = value;
-                if (_isShown && _stale) Rebuild();
-            }
+            if (shown) _viewers.Add(viewer);
+            else _viewers.Remove(viewer);
+            if (shown && _stale) Rebuild();
         }
 
         public void Initialize(ILogger logger)
@@ -111,7 +114,7 @@ namespace KERNEL.Ledger
 
         private void Update()
         {
-            if (_stale && _isShown && Time.unscaledTime >= _rebuildAt)
+            if (_stale && IsShown && Time.unscaledTime >= _rebuildAt)
                 Rebuild();
         }
 

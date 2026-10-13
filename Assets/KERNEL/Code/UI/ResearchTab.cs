@@ -50,6 +50,8 @@ namespace KERNEL.UI
         private ToggleExtended _tab;
         private ToggleExtended _lastTier;
         private ResearchSidebar _sidebar;
+        // Whether this page has told the ledger it's showing it
+        private bool _showingLedger;
         private RectTransform _starfieldRect;
         private RDInputDefinition _input;
         private int _tiers;
@@ -172,7 +174,20 @@ namespace KERNEL.UI
 
         private void OnDestroy()
         {
-            _input?.UnbindAction<float>(GameManager.Instance.Game.Input.RD.ScrollTechTree.name, OnScrollInput);
+            ShowLedger(false);
+
+            // As the stock R&D screen does: the game's input is already gone when quitting
+            GameInstance game = GameManager.Instance != null ? GameManager.Instance.Game : null;
+            if (game == null || game.ShutdownInProgress) return;
+            _input?.UnbindAction<float>(game.Input.RD.ScrollTechTree.name, OnScrollInput);
+        }
+
+        // While our page shows, the ledger keeps itself up to date (e.g. after reports scored in flight)
+        private void ShowLedger(bool shown)
+        {
+            if (shown == _showingLedger) return;
+            _showingLedger = shown;
+            KERNELPlugin.Instance?.Ledger?.SetShown(this, shown);
         }
 
         private void OnScrollInput(float input) => _scrollInput = input * _scrollSpeed;
@@ -288,6 +303,7 @@ namespace KERNEL.UI
                 else if (_page < 0.5f && _tab.isOn && _lastTier != null) _lastTier.SetIsOnWithoutNotify(true);
             }
 
+            ShowLedger(_tab.isOn);
             if (_sidebar != null) _sidebar.SetShown(_tab.isOn);
 
             // Carry everything left until the end of the tier backgrounds, and of the tree, leaves the screen

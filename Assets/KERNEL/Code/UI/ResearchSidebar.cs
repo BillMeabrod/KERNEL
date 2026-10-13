@@ -178,7 +178,14 @@ namespace KERNEL.UI
             _scienceValue.text = Tally(locations.Sum(l => l.Earned), locations.Sum(l => l.Possible));
 
             float scroll = _scroll.verticalNormalizedPosition;
-            foreach (Transform row in _rows) Destroy(row.gameObject);
+            // Detached first: Destroy only takes effect at the end of the frame, and the layout below must not
+            // count the old rows
+            for (int i = _rows.childCount - 1; i >= 0; i--)
+            {
+                Transform row = _rows.GetChild(i);
+                row.SetParent(null, false);
+                Destroy(row.gameObject);
+            }
             foreach (AreaEntry area in areas) AddArea(area);
 
             // Keep the place in the list when the same body refreshes (e.g. after scoring a report)
