@@ -89,14 +89,14 @@ namespace KERNEL.Ledger
                 .Where(definition => definition != null)
                 .ToList();
 
-            foreach (KeyValuePair<string, CelestialBodyScienceRegionsData> pair in bodyRegions)
+            foreach (string regionBody in bodyRegions.Keys.Where(name => game.CelestialBodies.Get(name)?.data == null))
+                _logger.LogWarning($"Science regions exist for unknown body '{regionBody}'");
+
+            // Every body, so the system map is complete; only those with science regions get areas
+            foreach (KeyValuePair<string, CelestialBodyCore> pair in game.CelestialBodies.GetAllBodiesData())
             {
-                CelestialBodyData body = game.CelestialBodies.Get(pair.Key)?.data;
-                if (body == null)
-                {
-                    _logger.LogWarning($"Science regions exist for unknown body '{pair.Key}'");
-                    continue;
-                }
+                CelestialBodyData body = pair.Value?.data;
+                if (body == null) continue;
 
                 bool isStar = game.CelestialBodies.GetStarStatus(pair.Key);
                 orbits.TryGet(pair.Key, out GalaxyOrbits.Orbit orbit);
@@ -107,21 +107,29 @@ namespace KERNEL.Ledger
                     IsStar = isStar,
                     IsDiscovered = firsts?.SOIReached.ContainsKey(pair.Key) ?? false,
                     ParentName = orbit.Parent ?? string.Empty,
-                    SemiMajorAxis = orbit.SemiMajorAxis
+                    SemiMajorAxis = orbit.SemiMajorAxis,
+                    Radius = body.radius,
+                    Rings = (body.ringGroupData ?? new List<CelestialBodyRingData>())
+                        .Select(ring => (ring.innerRadius, ring.outerRadius)).ToList()
                 };
 
-                var locations = new List<LocationEntry>();
-                foreach (ExperimentDefinition experiment in experiments)
+                if (bodyRegions.TryGetValue(pair.Key, out CelestialBodyScienceRegionsData scienceData))
                 {
-                    bool isUnlocked = unlockedIds.Contains(experiment.ExperimentID);
-                    foreach (LocationEntry location in BuildLocations(context, body, isStar, pair.Value, experiment))
+                    var locations = new List<LocationEntry>();
+                    foreach (ExperimentDefinition experiment in experiments)
                     {
-                        location.IsUnlocked = isUnlocked;
-                        locations.Add(location);
+                        bool isUnlocked = unlockedIds.Contains(experiment.ExperimentID);
+                        foreach (LocationEntry location in BuildLocations(context, body, isStar, scienceData, experiment))
+                        {
+                            location.IsUnlocked = isUnlocked;
+                            locations.Add(location);
+                        }
                     }
+
+                    bodyEntry.Areas = GroupIntoAreas(scienceData, locations);
+                    bodyEntry.HasScience = true;
                 }
 
-                bodyEntry.Areas = GroupIntoAreas(pair.Value, locations);
                 Bodies.Add(bodyEntry);
             }
 

@@ -1,0 +1,136 @@
+{
+  "version": "0.3",
+  "useExternal": false,
+  "data": {
+    "bodyName": "Mote",
+    "assetKeyScaled": "Celestial.Mote.Scaled.prefab",
+    "assetKeySimulation": "Celestial.Mote.Local.prefab",
+    "bodyDisplayName": "",
+    "bodyDescription": "",
+    "isStar": false,
+    "isHomeWorld": false,
+    "navballSwitchAltitudeHigh": 15000.0,
+    "navballSwitchAltitudeLow": 13000.0,
+    "hasSolidSurface": true,
+    "hasOcean": false,
+    "HasLocalSpace": true,
+    "radius": 10000.0,
+    "gravityASL": 0.1,
+    "oceanAltitude": 0.0,
+    "oceanDensity": 1.0,
+    "MinTerrainHeight": 0.0,
+    "MaxTerrainHeight": 0.0,
+    "TerrainHeightScale": 0.0,
+    "TimeWarpAltitudeOffset": 0.0,
+    "SphereOfInfluenceCalculationType": 0,
+    "ForcedSphereOfInfluence": 0.0,
+    "hasSolarRotationPeriod": false,
+    "hasInverseRotationThresholdClamp": true,
+    "hasInverseRotation": false,
+    "isRotating": true,
+    "isTidallyLocked": false,
+    "inverseRotThresholdAltitude": 15000.0,
+    "initialRotation": 0.0,
+    "rotationPeriod": 8000.0,
+    "axialTilt": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "hasAtmosphere": false,
+    "atmosphereContainsOxygen": false,
+    "atmosphereDepth": 0.0,
+    "atmosphereTemperatureSeaLevel": 288.0,
+    "atmospherePressureSeaLevel": 101.32499694824219,
+    "atmosphereMolarMass": 0.0289644,
+    "atmosphereAdiabaticIndex": 1.4,
+    "atmosphericReentryVFXGradient": "",
+    "useAtmospherePressureCurve": false,
+    "useAtmosphereTemperatureCurve": false,
+    "useAtmosphereHumidityCurve": false,
+    "atmospherePressureCurve": {
+      "fCurve": {
+        "keys": [],
+        "length": 0,
+        "preWrapMode": "ClampForever",
+        "postWrapMode": "ClampForever"
+      },
+      "_minTime": 3.40282347E+38,
+      "_maxTime": -3.40282347E+38
+    },
+    "BodyAltitudeTemperatureCurve": {
+      "fCurve": {
+        "keys": [],
+        "length": 0,
+        "preWrapMode": "ClampForever",
+        "postWrapMode": "ClampForever"
+      },
+      "_minTime": 3.40282347E+38,
+      "_maxTime": -3.40282347E+38
+    },
+    "BodyAltitudeSurfaceFluxCurve": {
+      "fCurve": {
+        "keys": [
+          {
+            "time": 0.0,
+            "value": 0.0,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "inWeight": 0.0,
+            "outWeight": 0.0,
+            "weightedMode": "None",
+            "tangentMode": 0
+          }
+        ],
+        "length": 1,
+        "preWrapMode": "ClampForever",
+        "postWrapMode": "ClampForever"
+      },
+      "_minTime": 3.40282347E+38,
+      "_maxTime": -3.40282347E+38
+    },
+    "BodyAltitudeFluxCurve": {
+      "fCurve": {
+        "keys": [
+          {
+            "time": 0.0,
+            "value": 0.0,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "inWeight": 0.0,
+            "outWeight": 0.0,
+            "weightedMode": "None",
+            "tangentMode": 0
+          }
+        ],
+        "length": 1,
+        "preWrapMode": "ClampForever",
+        "postWrapMode": "ClampForever"
+      },
+      "_minTime": 3.40282347E+38,
+      "_maxTime": -3.40282347E+38
+    },
+    "BodyAltitudeRelativeHumidityCurve": {
+      "fCurve": {
+        "keys": [],
+        "length": 0,
+        "preWrapMode": "ClampForever",
+        "postWrapMode": "ClampForever"
+      },
+      "_minTime": 3.40282347E+38,
+      "_maxTime": -3.40282347E+38
+    },
+    "BodySurfaceFluxMapPath": "",
+    "BodySurfaceFluxScale": 1.0,
+    "StarLuminosity": 3.06E+24,
+    "ringGroupData": [],
+    "MineDustColor": {
+      "x": 0.5,
+      "y": 0.5,
+      "z": 0.5,
+      "w": 1.0
+    },
+    "LocalSimObjectsData": [],
+    "LocalColonyObjectsData": []
+  }
+}

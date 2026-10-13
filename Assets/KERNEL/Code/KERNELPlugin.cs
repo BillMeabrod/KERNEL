@@ -29,14 +29,33 @@ namespace KERNEL
 
         private Sprite _toolbarIcon;
 
+        public override void OnPreInitialized()
+        {
+            ResearchTab.RegisterPatch(PM);
+            BodyArt.Logger = SWLogger;
+
+            // The game gives a mod its own page in the settings menu only if its settings exist when the menu is
+            // set up, which is before OnInitialized
+            KernelSettings.Bind(SWConfiguration);
+
+            // Generated planet art reads the bodies' surfaces while a save loads, not when the map opens
+            SpaceWarp2.API.Loading.SaveLoad.AddFlowActionToCampaignLoadAfter(new PrepareBodyArt(SWLogger), PrepareBodyArt.After);
+        }
+
         public override void OnInitialized()
         {
             Instance = this;
+            // KERNEL's views bind show and hide through these, so they're registered before any view loads
+            KernelConverters.Register();
             Ledger = gameObject.AddComponent<LedgerService>();
             Ledger.Initialize(SWLogger);
             Ledger.Rebuilt += roots => LedgerWindow?.ShowLedger(roots);
 
+            // Showing or hiding spoilers changes what every view of the ledger shows
+            KernelSettings.Changed += Ledger.Invalidate;
+
             Messages?.PersistentSubscribe<GameStateChangedMessage>(OnGameStateChanged);
+            Messages?.PersistentSubscribe<GameLoadFinishedMessage>(message => PrepareBodyArt.CheckRan(message, SWLogger));
 
             // Redux builds each toolbar fresh on entering its scene, then raises these
             if (IAppbarBackend.Instance != null)
@@ -106,7 +125,7 @@ namespace KERNEL
             PanelRenderer renderer = Window.Create(options, uxml).EnableUiSounds();
             LedgerWindow = renderer.gameObject.AddComponent<LedgerWindowController>();
             LedgerWindow.Initialize(renderer);
-            LedgerWindow.OpenChanged += isOpen => Ledger.IsShown = isOpen;
+            LedgerWindow.OpenChanged += isOpen => Ledger.SetShown(LedgerWindow, isOpen);
             if (Ledger.Roots.Count > 0) LedgerWindow.ShowLedger(Ledger.Roots);
         }
 

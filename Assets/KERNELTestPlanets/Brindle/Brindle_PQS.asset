@@ -1,0 +1,194 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1498497802, guid: 06dd3d5416bf43ea368cc39ff96e6d5a, type: 3}
+  m_Name: Brindle_PQS
+  m_EditorClassIdentifier: Assembly-CSharp.dll::KSP.Rendering.Planets.PQSData
+  heightMapInfo:
+    globalHeightMap: {fileID: 0}
+    heightMapScale: 600
+    scaledToLocalTransition: 40000
+    scaledToLocalBlend: 1000
+    DitheringScale: 1
+    PoleDirectionOffset: {x: 0.0001, y: 0.0001}
+    UVOffsetV: 0.01
+    PoleHeightDecalSettings:
+      North:
+        Radius: 0
+        BlendFalloff: 0
+        HeightOffset: 0
+        NoiseScale: 0
+        NoiseFrequency: 0
+      South:
+        Radius: 0
+        BlendFalloff: 0
+        HeightOffset: 0
+        NoiseScale: 0
+        NoiseFrequency: 0
+    mask: {fileID: 0}
+    subZonesEnabled: 0
+    subZoneMask: {fileID: 0}
+    largeR:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    largeG:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    largeB:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    largeA:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    mediumR:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    mediumG:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    mediumB:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    mediumA:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone3R:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone4R:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone3G:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone4G:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone3B:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone4B:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone3A:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    subzone4A:
+      heightMap: {fileID: 0}
+      uvScale: 10
+      heightScale: 0
+      subZoneFilter: {x: 0, y: 0, z: 0, w: 0}
+    heightMapContrast: 5
+    mediumTextureFilteringMode: 1
+    largeTextureFilteringMode: 1
+    globalTextureFilteringMode: 1
+    decalHeightFilteringMode: 1
+    decalAlphaFilteringMode: 1
+  materialSettings:
+    surfaceMaterial: {fileID: 2100000, guid: 9c9f1f90718520e4586e596282b705d0, type: 2}
+    scaledSpaceMaterial: {fileID: 0}
+    VSPQueryShader: {fileID: 0}
+    meshCastShadows: 0
+    meshRecieveShadows: 0
+    worldSpaceTile: 30000
+    antiTileOn: 1
+    reduxGradienceEnabled: 1
+  PlanetBiomeData:
+    Red:
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    Green:
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    Blue:
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    Alpha:
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+    - TextureIndex: 0
+      BiomeType: 0
+      BiomeColorIndex: 0
+  PlanetBiomeHashTable: {fileID: 0}
+  BiomeColorLookupTable: {fileID: 0}
+  viewBoundsMultiplier: 1.1
+  viewPlaneCutoffMultipliers:
+  - 0.5
+  - 0.75
+  - 1.1
+  subdivisionMaxLevelOverride: 0

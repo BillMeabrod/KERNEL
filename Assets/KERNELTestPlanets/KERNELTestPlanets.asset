@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9065a46703c44e8fabd263388eaeb6e7, type: 3}
+  m_Name: KERNELTestPlanets
+  m_EditorClassIdentifier: ksp2community.ksp2unitytools.editor::Ksp2UnityTools.Editor.Modding.Mod
+  id: KERNELTestPlanets
+  name: KERNELTestPlanets
+  author: nobody
+  description: A sample mod for KSP2
+  version: 0.1.0
+  versionCheck: 
+  minKsp2Version: '*'
+  maxKsp2Version: '*'
+  source: 
+  allGroup: {fileID: 11400000, guid: 25bad385904668943a101ef76ad06350, type: 2}
+  partsGroup: {fileID: 11400000, guid: 4e51477a86b749f44ab5494d659a6fef, type: 2}
+  missionsGroup: {fileID: 11400000, guid: 4d65762a25cbda142b5affc85bc3c820, type: 2}
+  celestialBodiesGroup: {fileID: 11400000, guid: a6e53775be631d94eb0d681467e0f8b3, type: 2}
+  scienceExperimentGroup: {fileID: 11400000, guid: e056a61057621ae49bd9e52493b82524, type: 2}
+  techNodeDataGroup: {fileID: 11400000, guid: 020a7349b60098740ab6f60adeba652d, type: 2}
+  resourcesGroup: {fileID: 11400000, guid: 745994ff3d02cd34eb190f347b2e273c, type: 2}
+  addressablesProfileId: 01eaee7e8d56de747b01bdd81ca83819
+  dependencies:
+  - id: SpaceWarp2
+    min: 2.0.0
+    max: '*'
+  incompatibilities: []
