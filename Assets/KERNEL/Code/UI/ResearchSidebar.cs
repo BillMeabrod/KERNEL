@@ -44,7 +44,6 @@ namespace KERNEL.UI
         private PanelRenderer _window;
         private VisualElement _panel;
         private ScrollView _list;
-        private VisualElement _report;
         private VisualTreeAsset _biomeRow, _experimentRow;
         private readonly ResearchSidebarViewModel _model = new();
         private Rect _placedAt;
@@ -97,7 +96,6 @@ namespace KERNEL.UI
                 root.dataSource = _model;
                 _panel = root.Q("kernel-sidebar");
                 _list = root.Q<ScrollView>("biome-list");
-                _report = root.Q("report");
                 _dirty = true;
             });
             _window.EnableLocalization();
@@ -250,7 +248,6 @@ namespace KERNEL.UI
                 model.OpenChanged += open =>
                 {
                     if (open) Fill();
-                    biome.EnableInClassList("kernel-biome--open", open);
                     if (open) _open.Add(key);
                     else _open.Remove(key);
                 };
@@ -277,7 +274,6 @@ namespace KERNEL.UI
             TemplateContainer row = _experimentRow.Instantiate();
             row.dataSource = model;
             if (model.IsComplete) row.Q("tally").AddToClassList("kernel--complete");
-            if (!showSituation) row.Q("situation").style.display = DisplayStyle.None;
 
             // Hovering over the row shows its field report; clicking it keeps it there until clicked again
             var button = row.Q<Button>("experiment");
@@ -309,8 +305,6 @@ namespace KERNEL.UI
 
         private void ShowReport()
         {
-            if (_report == null) return;
-
             ExperimentRowViewModel row = _hovered ?? _selected;
             bool hasText = row != null && !string.IsNullOrEmpty(row.FlavorText);
 
@@ -320,8 +314,8 @@ namespace KERNEL.UI
                 : !hasText ? Localization.Translate(Localization.NoFieldReport)
                 : row.FlavorText;
 
-            _report.EnableInClassList("kernel-report--no-title", row == null);
-            _report.EnableInClassList("kernel-report--empty", !hasText);
+            _model.HasReportTitle = row != null;
+            _model.HasReportText = hasText;
         }
 
         // FNV-1a, stable across runs (unlike string.GetHashCode)

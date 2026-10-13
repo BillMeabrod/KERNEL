@@ -2,7 +2,6 @@ using System;
 using KSP.Game;
 using KSP.Messages;
 using ReduxLib.GameInterfaces;
-using UnityEngine;
 using ILogger = ReduxLib.Logging.ILogger;
 
 namespace KERNEL.UI
@@ -25,8 +24,11 @@ namespace KERNEL.UI
         // Whether the step has run during the current load (see CheckRan)
         private static bool _ran;
 
-        public PrepareBodyArt() : base(StepName, StepName)
+        private readonly ILogger _logger;
+
+        public PrepareBodyArt(ILogger logger) : base(StepName, StepName)
         {
+            _logger = logger;
         }
 
         public override void DoAction(Action resolve, Action<string> reject)
@@ -41,7 +43,7 @@ namespace KERNEL.UI
             catch (Exception e)
             {
                 // Art can still be made when the map opens; never hold up loading the save
-                Debug.LogException(e);
+                _logger?.LogError(e);
                 resolve();
             }
         }

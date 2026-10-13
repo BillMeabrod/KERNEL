@@ -6,6 +6,7 @@ using KSP.Game;
 using KSP.Rendering;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using ILogger = ReduxLib.Logging.ILogger;
 using Object = UnityEngine.Object;
 
 namespace KERNEL.UI
@@ -272,6 +273,11 @@ namespace KERNEL.UI
         /// </summary>
         public static event Action<string> RingColoursRead;
 
+        /// <summary>
+        /// The mod's logger, for art jobs that fail.
+        /// </summary>
+        public static ILogger Logger { get; set; }
+
         // A ringed body's ring colours, read once and kept. Each ring on the scaled-space model has a texture running
         // from its inner edge to its outer edge (u across the ring), read here as one row of colours
         private static void GetRingProfiles(string body, Action<List<Color32[]>> done)
@@ -292,10 +298,6 @@ namespace KERNEL.UI
             }, profiles =>
             {
                 RingProfiles[body] = profiles ?? new List<Color32[]>();
-                // What was found, so a body drawn in the plain ring colours can be told from one whose own are similar
-                Debug.Log($"[KERNEL] {body} rings: {RingProfiles[body].Count} on its model, " +
-                          $"{RingProfiles[body].Count(p => p != null)} with a texture" +
-                          string.Concat(RingProfiles[body].Where(p => p != null).Select(p => " #" + ColorUtility.ToHtmlStringRGB(AverageColour(p)))));
                 done(RingProfiles[body]);
                 RingColoursRead?.Invoke(body);
             });
@@ -390,7 +392,7 @@ namespace KERNEL.UI
                 }
                 catch (Exception e)
                 {
-                    Debug.LogException(e);
+                    Logger?.LogError(e);
                     _busy = false;
                 }
             }

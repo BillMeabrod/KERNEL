@@ -39,9 +39,12 @@
         <ui:VisualElement class="kernel-sidebar__divider" />
         <!-- Field report: where Paige sits in the stock sidebar. Shows the hovered experiment's report, or else the
              selected one's -->
-        <ui:VisualElement name="report" class="kernel-report kernel-report--empty kernel-report--no-title">
+        <ui:VisualElement name="report" class="kernel-report">
             <ui:Label text="#KERNEL/UI/FieldReport" class="kernel-sidebar__label uppercase" />
             <ui:VisualElement class="kernel-report__title">
+                <Bindings>
+                    <ui:DataBinding property="style.display" data-source-path="HasReportTitle" binding-mode="ToTarget" source-to-ui-converters="KernelBoolToDisplay" />
+                </Bindings>
                 <ui:Label class="kernel-report__experiment">
                     <Bindings>
                         <ui:DataBinding property="text" data-source-path="ReportExperiment" binding-mode="ToTarget" />
@@ -53,9 +56,17 @@
                     </Bindings>
                 </ui:Label>
             </ui:VisualElement>
+            <!-- The report's text, or (dimmed) the hint or "no field report yet" when there's none to show -->
             <ui:Label class="kernel-report__text">
                 <Bindings>
                     <ui:DataBinding property="text" data-source-path="ReportText" binding-mode="ToTarget" />
+                    <ui:DataBinding property="style.display" data-source-path="HasReportText" binding-mode="ToTarget" source-to-ui-converters="KernelBoolToDisplay" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label class="kernel-report__text kernel-report__text--empty">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="ReportText" binding-mode="ToTarget" />
+                    <ui:DataBinding property="style.display" data-source-path="HasReportText" binding-mode="ToTarget" source-to-ui-converters="KernelInvertedBoolToDisplay" />
                 </Bindings>
             </ui:Label>
         </ui:VisualElement>

@@ -60,6 +60,25 @@ namespace KERNEL.UI
             get => _reportText;
             set => SetField(ref _reportText, value);
         }
+
+        private bool _hasReportTitle;
+        private bool _hasReportText;
+
+        // Whether an experiment is hovered or selected, so its name and place head the report
+        [CreateProperty]
+        public bool HasReportTitle
+        {
+            get => _hasReportTitle;
+            set => SetField(ref _hasReportTitle, value);
+        }
+
+        // Whether ReportText is a report's text, rather than the hint or "no field report yet" (shown dimmed)
+        [CreateProperty]
+        public bool HasReportText
+        {
+            get => _hasReportText;
+            set => SetField(ref _hasReportText, value);
+        }
     }
 
     /// <summary>
@@ -124,6 +143,7 @@ namespace KERNEL.UI
             Name = name;
             Place = place;
             Situation = situation;
+            ShowsSituation = !string.IsNullOrEmpty(situation);
             Tally = tally;
             IsComplete = isComplete;
             _readFlavorText = flavorText;
@@ -141,6 +161,9 @@ namespace KERNEL.UI
         // Landed, splashed... for biomes, where both can happen; empty for whole-body areas
         [CreateProperty]
         public string Situation { get; }
+
+        [CreateProperty]
+        public bool ShowsSituation { get; }
 
         [CreateProperty]
         public string Tally { get; }

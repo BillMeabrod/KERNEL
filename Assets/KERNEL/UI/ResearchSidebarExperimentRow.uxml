@@ -11,6 +11,7 @@
         <ui:Label name="situation" class="kernel-experiment__situation">
             <Bindings>
                 <ui:DataBinding property="text" data-source-path="Situation" binding-mode="ToTarget" />
+                <ui:DataBinding property="style.display" data-source-path="ShowsSituation" binding-mode="ToTarget" source-to-ui-converters="KernelBoolToDisplay" />
             </Bindings>
         </ui:Label>
         <ui:Label name="tally" class="kernel-experiment__tally">

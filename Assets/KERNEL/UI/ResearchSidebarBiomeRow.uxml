@@ -2,7 +2,11 @@
     <!-- One biome (or orbit, or the atmosphere) in K.E.R.N.E.L's R&D sidebar; data source: BiomeRowViewModel -->
     <ui:VisualElement class="kernel-biome">
         <ui:Button name="header" class="kernel-biome__header">
-            <ui:VisualElement name="arrow" class="kernel-biome__arrow" />
+            <ui:VisualElement name="arrow" class="kernel-biome__arrow">
+                <Bindings>
+                    <ui:DataBinding property="style.rotate" data-source-path="IsOpen" binding-mode="ToTarget" source-to-ui-converters="KernelBoolToOpenArrow" />
+                </Bindings>
+            </ui:VisualElement>
             <ui:Label class="kernel-biome__name">
                 <Bindings>
                     <ui:DataBinding property="text" data-source-path="Name" binding-mode="ToTarget" />
@@ -14,6 +18,10 @@
                 </Bindings>
             </ui:Label>
         </ui:Button>
-        <ui:VisualElement name="experiments" class="kernel-biome__experiments" />
+        <ui:VisualElement name="experiments" class="kernel-biome__experiments">
+            <Bindings>
+                <ui:DataBinding property="style.display" data-source-path="IsOpen" binding-mode="ToTarget" source-to-ui-converters="KernelBoolToDisplay" />
+            </Bindings>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

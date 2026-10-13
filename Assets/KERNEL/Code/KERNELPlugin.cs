@@ -32,18 +32,21 @@ namespace KERNEL
         public override void OnPreInitialized()
         {
             ResearchTab.RegisterPatch(PM);
+            BodyArt.Logger = SWLogger;
 
             // The game gives a mod its own page in the settings menu only if its settings exist when the menu is
             // set up, which is before OnInitialized
             KernelSettings.Bind(SWConfiguration);
 
             // Generated planet art reads the bodies' surfaces while a save loads, not when the map opens
-            SpaceWarp2.API.Loading.SaveLoad.AddFlowActionToCampaignLoadAfter(new PrepareBodyArt(), PrepareBodyArt.After);
+            SpaceWarp2.API.Loading.SaveLoad.AddFlowActionToCampaignLoadAfter(new PrepareBodyArt(SWLogger), PrepareBodyArt.After);
         }
 
         public override void OnInitialized()
         {
             Instance = this;
+            // KERNEL's views bind show and hide through these, so they're registered before any view loads
+            KernelConverters.Register();
             Ledger = gameObject.AddComponent<LedgerService>();
             Ledger.Initialize(SWLogger);
             Ledger.Rebuilt += roots => LedgerWindow?.ShowLedger(roots);

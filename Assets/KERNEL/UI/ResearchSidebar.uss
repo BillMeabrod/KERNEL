@@ -90,10 +90,6 @@
     -unity-background-scale-mode: scale-to-fit;
 }
 
-.kernel-biome--open .kernel-biome__arrow {
-    rotate: 90deg;
-}
-
 .kernel-biome__name {
     flex-grow: 1;
     font-size: 16px;
@@ -129,13 +125,9 @@
     color: rgb(109, 115, 135);
 }
 
+/* Shown while the biome is open (bound to its view model) */
 .kernel-biome__experiments {
-    display: none;
     margin-bottom: 4px;
-}
-
-.kernel-biome--open .kernel-biome__experiments {
-    display: flex;
 }
 
 /* Experiment rows */
@@ -216,11 +208,8 @@
 }
 
 /* Nothing to read: the title goes and the hint (or "no report yet") is dimmed */
-.kernel-report--empty .kernel-report__text {
+.kernel-report__text--empty {
     color: rgb(109, 115, 135);
     -unity-font-style: italic;
 }
 
-.kernel-report--no-title .kernel-report__title {
-    display: none;
-}
