@@ -82,6 +82,8 @@ namespace KERNEL.Ledger
         public double Radius;
         // False for bodies with no science regions, e.g. ones a mod adds without any; they have no areas
         public bool HasScience;
+        // Each ring band's inner and outer radius in metres, from the body's ring data; drawn on the system map
+        public List<(double Inner, double Outer)> Rings = new();
 
         public List<AreaEntry> Areas = new();
         public List<BodyEntry> Children = new();

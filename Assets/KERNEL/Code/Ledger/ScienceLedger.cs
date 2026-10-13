@@ -108,7 +108,9 @@ namespace KERNEL.Ledger
                     IsDiscovered = firsts?.SOIReached.ContainsKey(pair.Key) ?? false,
                     ParentName = orbit.Parent ?? string.Empty,
                     SemiMajorAxis = orbit.SemiMajorAxis,
-                    Radius = body.radius
+                    Radius = body.radius,
+                    Rings = (body.ringGroupData ?? new List<CelestialBodyRingData>())
+                        .Select(ring => (ring.innerRadius, ring.outerRadius)).ToList()
                 };
 
                 if (bodyRegions.TryGetValue(pair.Key, out CelestialBodyScienceRegionsData scienceData))

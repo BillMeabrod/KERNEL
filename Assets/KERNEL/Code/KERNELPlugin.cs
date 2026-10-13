@@ -32,6 +32,9 @@ namespace KERNEL
         public override void OnPreInitialized()
         {
             ResearchTab.RegisterPatch(PM);
+
+            // Generated planet art reads the bodies' surfaces while a save loads, not when the map opens
+            SpaceWarp2.API.Loading.SaveLoad.AddFlowActionToCampaignLoadAfter(new PrepareBodyArt(), PrepareBodyArt.After);
         }
 
         public override void OnInitialized()

@@ -35,6 +35,101 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a152333d7d94ffe8abdfee183e21e29
+    m_Address: KERNEL/Bodies/Kerbol.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df0c6267f3b345e495236e386f67442b
+    m_Address: KERNEL/Bodies/Moho.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a52c8377dc2540eea6b37ce79c65309a
+    m_Address: KERNEL/Bodies/Eve.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 54c7046b134d4202aac75b5b9ba95639
+    m_Address: KERNEL/Bodies/Gilly.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c8eb7166865a42df8008623ef7bc27a3
+    m_Address: KERNEL/Bodies/Kerbin.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2ac881ebdcad41eeb7344dd943c0e29d
+    m_Address: KERNEL/Bodies/Mun.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 74902aaf98bd42e4a417c6c42f10870a
+    m_Address: KERNEL/Bodies/Minmus.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7199f5ffa2e84a528a57f4ae50b7c7fd
+    m_Address: KERNEL/Bodies/Duna.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cce0073dde56477ea357e73f593a9de0
+    m_Address: KERNEL/Bodies/Ike.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ac840f11f45045d085f21d8c2e052e96
+    m_Address: KERNEL/Bodies/Dres.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48857f47aab14e4c83e4f7a07652c498
+    m_Address: KERNEL/Bodies/Drast.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1ac17f84ee2044f1961d34cc3be331bb
+    m_Address: KERNEL/Bodies/Beyl.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f13a9a17e374a3bb60cf3278bcbad5a
+    m_Address: KERNEL/Bodies/Jool.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51a5256758a143a9a95947d7d460101d
+    m_Address: KERNEL/Bodies/Laythe.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3ccbb3782024159a0710b6a09072507
+    m_Address: KERNEL/Bodies/Vall.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21f6439031654eaeab1dea9d285e34b8
+    m_Address: KERNEL/Bodies/Tylo.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f25e790eb80472fb47db9fd1dfb1856
+    m_Address: KERNEL/Bodies/Bop.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e69002626494426a9f3232d252a713e9
+    m_Address: KERNEL/Bodies/Pol.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 752eb43f9c8b47e5b1997a544bf360d1
+    m_Address: KERNEL/Bodies/Eeloo.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 87091f8f6983b3845a0038f3906915df, type: 2}
   m_SchemaSet:

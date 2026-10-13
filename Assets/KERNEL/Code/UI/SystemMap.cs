@@ -65,6 +65,8 @@ namespace KERNEL.UI
         private static readonly Color StarColor = new(1f, 0.84f, 0.47f);
         private static readonly Color LineColor = new(1f, 1f, 1f, 0.18f);
         private static readonly Color LabelColor = new(0.85f, 0.88f, 0.95f);
+        // Art is drawn a touch below full brightness, so hovering can brighten it
+        private static readonly Color ArtTint = new(0.86f, 0.86f, 0.86f, 1f);
         private static readonly Color PickerColor = new(0.6f, 0.64f, 0.72f);
         private static readonly Color PickerHoverColor = new(0.85f, 0.88f, 0.95f);
         private static readonly Color PickerSelectedColor = new(1f, 0.84f, 0.47f);
@@ -353,7 +355,7 @@ namespace KERNEL.UI
 
             // How wide a planet's column needs to be for it, its moons and theirs
             float ColumnWidth(BodyEntry body, int depth) =>
-                Orbiting(body).Select(child => ColumnWidth(child, depth + 1)).Append(SizeOf(body) + 2f * SubIndent * depth).Max();
+                Orbiting(body).Select(child => ColumnWidth(child, depth + 1)).Append(Footprint(body, SizeOf(body)) + 2f * SubIndent * depth).Max();
 
             // Stacks a body's moons downward from y at x, then their moons further right below each. The line
             // down to each runs from just below the name above it, so it never crosses a name
@@ -362,11 +364,12 @@ namespace KERNEL.UI
                 foreach (BodyEntry moon in Orbiting(parent))
                 {
                     float size = SizeOf(moon);
-                    float centre = y - size / 2f;
+                    float half = HalfHeight(moon, size);
+                    float centre = y - half;
                     AddLine(column, new Vector2(x, lineFrom), new Vector2(x, centre));
                     AddBody(column, moon, new Vector2(x, centre), size);
-                    lineFrom = centre - size / 2f - LabelGap - LabelHeight;
-                    y -= size + LabelGap + LabelHeight + RowGap;
+                    lineFrom = centre - half - LabelGap - LabelHeight;
+                    y -= 2f * half + LabelGap + LabelHeight + RowGap;
 
                     if (!Orbiting(moon).Any()) continue;
                     float subX = x + SubIndent;
@@ -402,10 +405,11 @@ namespace KERNEL.UI
                 AddLine(root, new Vector2(x - ColumnGap / 2f, _rowCentre),
                     new Vector2(last ? cx : x + column + ColumnGap / 2f, _rowCentre));
                 AddBody(root, planet, new Vector2(cx, _rowCentre), planetSize);
-                float my = _rowCentre - planetSize / 2f - LabelGap - LabelHeight - RowGap;
+                float planetHalf = HalfHeight(planet, planetSize);
+                float my = _rowCentre - planetHalf - LabelGap - LabelHeight - RowGap;
                 if (Orbiting(planet).Any())
                 {
-                    StackMoons(root, planet, cx, _rowCentre - planetSize / 2f - LabelGap - LabelHeight, ref my);
+                    StackMoons(root, planet, cx, _rowCentre - planetHalf - LabelGap - LabelHeight, ref my);
                 }
 
                 bottom = Mathf.Min(bottom, my + RowGap);
@@ -527,18 +531,53 @@ namespace KERNEL.UI
             ((RectTransform)ring.transform).sizeDelta = new Vector2(ringSize, ringSize);
             ring.raycastTarget = false;
 
+            // The rings' back half is drawn behind the body and their front half over it
+            var rings = BodyArt.Rings(body, size);
+            if (rings != null)
+            {
+                Image back = NewImage("Rings Back", root, rings.Value.Back, Color.white);
+                ((RectTransform)back.transform).sizeDelta = rings.Value.Size;
+                back.raycastTarget = false;
+            }
+
+            // A placeholder circle until the body's art has loaded
             Image disc = NewImage("Body", root, Disc, body.IsStar ? StarColor : PlaceholderColor(body.BodyName));
             ((RectTransform)disc.transform).sizeDelta = new Vector2(size, size);
+
+            if (rings != null)
+            {
+                Image front = NewImage("Rings Front", root, rings.Value.Front, Color.white);
+                ((RectTransform)front.transform).sizeDelta = rings.Value.Size;
+                front.raycastTarget = false;
+            }
 
             TextMeshProUGUI label = NewLabel("Label", root, body.DisplayName, 18f);
             var labelRect = (RectTransform)label.transform;
             labelRect.sizeDelta = new Vector2(Mathf.Max(size, MinColumnWidth + ColumnGap * 0.5f), LabelHeight);
-            labelRect.anchoredPosition = new Vector2(0f, -(size / 2f + LabelGap + LabelHeight / 2f));
+            labelRect.anchoredPosition = new Vector2(0f, -(HalfHeight(body, size) + LabelGap + LabelHeight / 2f));
 
             BodyNode node = disc.gameObject.AddComponent<BodyNode>();
             node.Initialize(this, body, disc, ring);
             _nodes.Add(node);
+
+            BodyArt.Request(body, size, art =>
+            {
+                if (art == null || disc == null) return;
+                disc.sprite = art;
+                // A star's art includes its glow, so it's wider than the disc
+                float scale = body.IsStar ? BodyArt.StarArtScale(BodyArt.Pixels(size)) : 1f;
+                ((RectTransform)disc.transform).sizeDelta = new Vector2(size, size) * scale;
+                node.SetBaseColour(ArtTint);
+            });
         }
+
+        // How far a body (or its rings) reaches above and below its centre
+        private static float HalfHeight(BodyEntry body, float size) =>
+            Mathf.Max(size / 2f, size / 2f * BodyArt.RingReach(body) * BodyArt.RingTilt);
+
+        // How wide a body (and its rings) is
+        private static float Footprint(BodyEntry body, float size) =>
+            Mathf.Max(size, size * BodyArt.RingReach(body) + 4f * BodyArt.Unit);
 
         private TextMeshProUGUI NewLabel(string name, Transform parent, string text, float fontSize)
         {
@@ -822,6 +861,12 @@ namespace KERNEL.UI
                 _body = disc;
                 _bodyColour = disc.color;
                 _ring = ring;
+                Refresh();
+            }
+
+            public void SetBaseColour(Color colour)
+            {
+                _bodyColour = colour;
                 Refresh();
             }
 
