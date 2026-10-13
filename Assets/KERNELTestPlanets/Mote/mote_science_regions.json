@@ -1,0 +1,24 @@
+{
+  "Version": "1.0",
+  "BodyName": "Mote",
+  "SituationData": {
+    "HighOrbitMaxAltitude": 12000.0,
+    "LowOrbitMaxAltutude": 3000.0,
+    "AtmosphereMaxAltutude": 0.0,
+    "CelestialBodyScalar": 3.0,
+    "HighOrbitScalar": 1.0,
+    "LowOrbitScalar": 1.5,
+    "AtmosphereScalar": 1.0,
+    "SplashedScalar": 1.0,
+    "LandedScalar": 2.0
+  },
+  "Regions": [
+    {
+      "Id": "MoteSurface",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.0,
+      "MapId": 0
+    }
+  ]
+}

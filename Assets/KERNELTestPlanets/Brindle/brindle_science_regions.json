@@ -1,0 +1,52 @@
+{
+  "Version": "1.0",
+  "BodyName": "Brindle",
+  "SituationData": {
+    "HighOrbitMaxAltitude": 200000000.0,
+    "LowOrbitMaxAltutude": 80000.0,
+    "AtmosphereMaxAltutude": 0.0,
+    "CelestialBodyScalar": 2.0,
+    "HighOrbitScalar": 1.0,
+    "LowOrbitScalar": 1.5,
+    "AtmosphereScalar": 1.0,
+    "SplashedScalar": 1.0,
+    "LandedScalar": 2.0
+  },
+  "Regions": [
+    {
+      "Id": "BrindleLowlands",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.0,
+      "MapId": 0
+    },
+    {
+      "Id": "BrindleHighlands",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.2,
+      "MapId": 1
+    },
+    {
+      "Id": "BrindleRedDunes",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.1,
+      "MapId": 2
+    },
+    {
+      "Id": "BrindlePoles",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.3,
+      "MapId": 3
+    },
+    {
+      "Id": "BrindleGreatCrater",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.5,
+      "MapId": 4
+    }
+  ]
+}

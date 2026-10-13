@@ -1,0 +1,165 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: KERNELTestPlanets_cbs
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: KERNELTestPlanets_cbs
+  m_GUID: b9e0b392e8676ff458afb715c0e7d720
+  m_SerializeEntries:
+  - m_GUID: 0a14a2fcfa6bdbd4f9da206aef0d49eb
+    m_Address: brindle_science_regions.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1bd90e6744befac4bbca73f639214d8e
+    m_Address: mote_science_regions.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 22f2d520c3c5a7e40be396c229ff2437
+    m_Address: brindle_baked_science_regions
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_map
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 353da2cf5941c97449e930d0ab55d119
+    m_Address: Pip.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - celestial_bodies
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36fef85bd58c9fb43b32407f3a9f656b
+    m_Address: mote_science_regions_discoverables.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_discoverables
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5410f711984caab46bfc58d763df0d68
+    m_Address: Celestial.Pip.Local.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 54d570e7dd9478d4dab71855d68d2a21
+    m_Address: zorbo_science_regions.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5600c4ae9e65af14eb2d80be0487202d
+    m_Address: Mote.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - celestial_bodies
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 56a28750d7c5cca41b21b64792b338d7
+    m_Address: mote_baked_science_regions
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_map
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60fce05da807cf24ba835d0b00a17491
+    m_Address: Brindle.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - celestial_bodies
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 70be303522dbd6b4a93da18c13c8f395
+    m_Address: Celestial.Vexa.Scaled.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8bd89bf1209c8dd4898b8a2d0e5d51e6
+    m_Address: zorbo_baked_science_regions
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_map
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a05efc5a10ac9394c88a36921f3811a2
+    m_Address: zorbo_science_regions_discoverables.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_discoverables
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a274fe94c60ba3a4b82813d6dd91b8d1
+    m_Address: Celestial.Brindle.Local.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: afe4885a2cc5adc4280f65603d8117fb
+    m_Address: pip_baked_science_regions
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_map
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b790f5415710288489d8effea9562957
+    m_Address: pip_science_regions_discoverables.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_discoverables
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c33db539cdc9f7b4994cc10cb36db26e
+    m_Address: Celestial.Zorbo.Scaled.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c82c50f01bc38c943b47aaa4a119bdb7
+    m_Address: Celestial.Mote.Scaled.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dfe08f828a901754d9836a5b78ec71ec
+    m_Address: brindle_science_regions_discoverables.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region_discoverables
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e0eb2e887d94f5a408ab75edaea78318
+    m_Address: Celestial.Brindle.Scaled.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea4f9ec82be5e994ab46797b871582ec
+    m_Address: Celestial.Pip.Scaled.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ebc72a2fb7709af408403604e8047c5c
+    m_Address: Celestial.Mote.Local.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f1e7e9c580a67764c8736ff2222337d6
+    m_Address: pip_science_regions.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - science_region
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f51bbeb5a7f6a6e4792006fd302b6764
+    m_Address: Vexa.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - celestial_bodies
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f94b5b709f3a17f43b733c18fca6cb12
+    m_Address: Zorbo.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - celestial_bodies
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 87091f8f6983b3845a0038f3906915df, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 0df12b476d748f84daef076fadf53abb, type: 2}
+    - {fileID: 11400000, guid: 19bc36eec04bf894c8629a04123ac648, type: 2}

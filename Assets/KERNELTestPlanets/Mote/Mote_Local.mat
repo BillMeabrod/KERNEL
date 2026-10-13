@@ -1,0 +1,674 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Mote_Local
+  m_Shader: {fileID: 4800000, guid: 1c81df8733113364c80fb6d1c6c84b42, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - REDUX_GRADIENCE
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AlbedoScaledTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BiomeMaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DecalAlbedo:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DecalAlphaMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DecalControl:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DecalNormalSAO:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DecalStaticData:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionScaledTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GlobalCurvatureTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GlobalGradienceTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeCurvatureA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeCurvatureB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeCurvatureG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeCurvatureR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeGradienceA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeGradienceB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeGradienceG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeGradienceR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeNormalA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeNormalB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeNormalG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LargeNormalR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LocalSpacePrepassTex0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LocalSpacePrepassTex1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LocalSpacePrepassTex2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LocalSpacePrepassTex3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LocalSpacePrepassTex4:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidCurvatureA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidCurvatureB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidCurvatureG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidCurvatureR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidGradienceA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidGradienceB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidGradienceG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidGradienceR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidNormalA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidNormalB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidNormalG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MidNormalR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalScaledTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PackedScaledTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ShorelineTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SmallAlbedoArray:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SmallMetalArray:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SmallNormalArray:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SubZonesNormalTextureArray:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3CurvatureA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3CurvatureB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3CurvatureG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3CurvatureR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3GradienceA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3GradienceB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3GradienceG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3GradienceR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3NormalA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3NormalB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3NormalG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone3NormalR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4CurvatureA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4CurvatureB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4CurvatureG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4CurvatureR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4GradienceA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4GradienceB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4GradienceG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4GradienceR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4NormalA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4NormalB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4NormalG:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Subzone4NormalR:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SubzoneMaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _EmissionScale: 0
+    - _HighQualityEnabled: 1
+    - _Radius: 0
+    - _StochasticScale: 1
+    - _Transition: 0
+    - _TriplanarContrast: 4
+    m_Colors:
+    - _AlbedoScaledFadeParams: {r: 0, g: 20000, b: 0.5, a: 1}
+    - _AlphaToHeightFadeParams: {r: 1, g: 1, b: 1, a: 1}
+    - _BiomeCutoffs: {r: 0, g: 0, b: 0, a: 0}
+    - _DecalFadeParams: {r: 0, g: 20000, b: 1, a: 0}
+    - _DistanceResampleAlbedoOpacity: {r: 1, g: 1, b: 1, a: 1}
+    - _DistanceResampleDistances: {r: 50, g: 500, b: 2000, a: 12000}
+    - _DistanceResampleFadeRangesNeg: {r: 1, g: 1, b: 1, a: 1}
+    - _DistanceResampleFadeRangesPos: {r: 1, g: 1, b: 1, a: 1}
+    - _DistanceResampleFades: {r: 1, g: 1, b: 1, a: 1}
+    - _DistanceResampleNormalOpacity: {r: 1, g: 1, b: 1, a: 1}
+    - _DistanceResampleUVScales: {r: 1, g: 2, b: 4, a: 8}
+    - _EmissionScaledFadeParams: {r: 0, g: 20000, b: 0.5, a: 1}
+    - _GlobalBlend: {r: 1, g: 1, b: 1, a: 1}
+    - _HeightblendFactor: {r: 0.02, g: 0.02, b: 0.02, a: 0.02}
+    - _LargeASubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _LargeBSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _LargeGSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _LargeHeightMapUVScales: {r: 1, g: 1, b: 1, a: 1}
+    - _LargeNormalAFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _LargeNormalAUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _LargeNormalBFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _LargeNormalBUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _LargeNormalGFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _LargeNormalGUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _LargeNormalRFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _LargeNormalRUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _LargeRSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _MediumHeightMapUVScales: {r: 1, g: 1, b: 1, a: 1}
+    - _MidASubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _MidBSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _MidGSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _MidNormalAFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _MidNormalAUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _MidNormalBFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _MidNormalBUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _MidNormalGFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _MidNormalGUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _MidNormalRFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _MidNormalRUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _MidRSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _NormalScaledFadeParams: {r: 0, g: 20000, b: 0.5, a: 1}
+    - _PackedScaledFadeParams: {r: 0, g: 20000, b: 0.5, a: 1}
+    - _SmallAOStrengthA: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallAOStrengthB: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallAOStrengthG: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallAOStrengthR: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeA: {r: -1, g: -1, b: -1, a: -1}
+    - _SmallBiomeACurvMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeACurvMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeACurvMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeACurvMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeAGradMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeAGradMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeAGradMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeAGradMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeAHeightParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeAHeightParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeAHeightParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeAHeightParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeAPeakCavParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeAPeakCavParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeAPeakCavParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeAPeakCavParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeASlopeParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeASlopeParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeASlopeParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeASlopeParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeB: {r: -1, g: -1, b: -1, a: -1}
+    - _SmallBiomeBCurvMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBCurvMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBCurvMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBCurvMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBGradMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBGradMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBGradMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBGradMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeBHeightParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBHeightParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBHeightParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBHeightParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBPeakCavParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBPeakCavParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBPeakCavParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBPeakCavParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBSlopeParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBSlopeParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBSlopeParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeBSlopeParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeG: {r: -1, g: -1, b: -1, a: -1}
+    - _SmallBiomeGCurvMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGCurvMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGCurvMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGCurvMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGGradMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGGradMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGGradMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGGradMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeGHeightParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGHeightParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGHeightParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGHeightParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGPeakCavParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGPeakCavParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGPeakCavParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGPeakCavParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGSlopeParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGSlopeParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGSlopeParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeGSlopeParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeHeightEnableA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeHeightEnableB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeHeightEnableG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeHeightEnableR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomePeakCavEnableA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomePeakCavEnableB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomePeakCavEnableG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomePeakCavEnableR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeR: {r: -1, g: -1, b: -1, a: -1}
+    - _SmallBiomeRCurvMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRCurvMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRCurvMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRCurvMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRGradMapWeights1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRGradMapWeights2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRGradMapWeights3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRGradMapWeights4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallBiomeRHeightParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRHeightParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRHeightParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRHeightParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRPeakCavParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRPeakCavParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRPeakCavParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRPeakCavParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRSlopeParams1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRSlopeParams2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRSlopeParams3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeRSlopeParams4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeSlopeEnableA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeSlopeEnableB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeSlopeEnableG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBiomeSlopeEnableR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBrightnessA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBrightnessB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBrightnessG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallBrightnessR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallContrastA: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallContrastB: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallContrastG: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallContrastR: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallDistanceResampleMaxA: {r: 4, g: 4, b: 4, a: 4}
+    - _SmallDistanceResampleMaxB: {r: 4, g: 4, b: 4, a: 4}
+    - _SmallDistanceResampleMaxG: {r: 4, g: 4, b: 4, a: 4}
+    - _SmallDistanceResampleMaxR: {r: 4, g: 4, b: 4, a: 4}
+    - _SmallEmissionColorA1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorA2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorA3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorA4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorB1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorB2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorB3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorB4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorG1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorG2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorG3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorG4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorR1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorR2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorR3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionColorR4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallEmissionStrengthA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallEmissionStrengthB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallEmissionStrengthG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallEmissionStrengthR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallEnableA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallEnableB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallEnableG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallEnableR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallGlossStrengthA: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallGlossStrengthB: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallGlossStrengthG: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallGlossStrengthR: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallHeightWeightA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallHeightWeightB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallHeightWeightG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallHeightWeightR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallMetallicStrengthA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallMetallicStrengthB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallMetallicStrengthG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallMetallicStrengthR: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallNormalStrengthA: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallNormalStrengthB: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallNormalStrengthG: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallNormalStrengthR: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSaturationA: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSaturationB: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSaturationG: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSaturationR: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneBrightnessA1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessA2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessA3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessA4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessB1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessB2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessB3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessB4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessG1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessG2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessG3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessG4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessR1: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessR2: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessR3: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneBrightnessR4: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallSubzoneTintA1_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA1_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA1_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA1_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA2_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA2_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA2_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA2_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA3_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA3_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA3_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA3_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA4_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA4_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA4_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintA4_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB1_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB1_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB1_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB1_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB2_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB2_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB2_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB2_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB3_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB3_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB3_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB3_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB4_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB4_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB4_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintB4_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG1_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG1_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG1_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG1_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG2_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG2_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG2_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG2_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG3_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG3_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG3_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG3_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG4_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG4_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG4_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintG4_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR1_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR1_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR1_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR1_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR2_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR2_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR2_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR2_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR3_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR3_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR3_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR3_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR4_A: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR4_B: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR4_G: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneTintR4_R: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightA1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightA2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightA3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightA4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightB1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightB2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightB3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightB4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightG1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightG2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightG3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightG4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightR1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightR2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightR3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallSubzoneWeightR4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintA1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintA2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintA3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintA4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintB1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintB2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintB3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintB4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintG1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintG2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintG3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintG4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintR1: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintR2: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintR3: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallTintR4: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVOffsetA: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVOffsetB: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVOffsetG: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVOffsetR: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVScaleA: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVScaleB: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVScaleG: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallUVScaleR: {r: 1, g: 1, b: 1, a: 1}
+    - _SmallWeightSoftnessA: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallWeightSoftnessB: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallWeightSoftnessG: {r: 0, g: 0, b: 0, a: 0}
+    - _SmallWeightSoftnessR: {r: 0, g: 0, b: 0, a: 0}
+    - _Subzone1NormalIndices: {r: -1, g: -1, b: -1, a: -1}
+    - _Subzone2NormalIndices: {r: -1, g: -1, b: -1, a: -1}
+    - _Subzone3ASubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone3BSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone3GSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone3HeightMapUVScales: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone3NormalAFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone3NormalAUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone3NormalBFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone3NormalBUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone3NormalGFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone3NormalGUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone3NormalIndices: {r: -1, g: -1, b: -1, a: -1}
+    - _Subzone3NormalRFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone3NormalRUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone3RSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone4ASubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone4BSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone4GSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone4HeightMapUVScales: {r: 1, g: 1, b: 1, a: 1}
+    - _Subzone4NormalAFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone4NormalAUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone4NormalBFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone4NormalBUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone4NormalGFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone4NormalGUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone4NormalIndices: {r: -1, g: -1, b: -1, a: -1}
+    - _Subzone4NormalRFadeParams: {r: 0, g: 10000, b: 0.5, a: 1}
+    - _Subzone4NormalRUVParams: {r: 1, g: 1, b: 0, a: 0}
+    - _Subzone4RSubzoneFilter: {r: 1, g: 1, b: 1, a: 1}
+    - _TriplanarUVScaleOffset: {r: 1, g: 1, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

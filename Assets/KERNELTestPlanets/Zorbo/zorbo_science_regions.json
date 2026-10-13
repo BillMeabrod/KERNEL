@@ -1,0 +1,45 @@
+{
+  "Version": "1.0",
+  "BodyName": "Zorbo",
+  "SituationData": {
+    "HighOrbitMaxAltitude": 1000000000.0,
+    "LowOrbitMaxAltutude": 3000000.0,
+    "AtmosphereMaxAltutude": 250000.0,
+    "CelestialBodyScalar": 1.5,
+    "HighOrbitScalar": 1.0,
+    "LowOrbitScalar": 1.5,
+    "AtmosphereScalar": 2.0,
+    "SplashedScalar": 1.0,
+    "LandedScalar": 1.0
+  },
+  "Regions": [
+    {
+      "Id": "ZorboNorthernBands",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.0,
+      "MapId": 0
+    },
+    {
+      "Id": "ZorboVioletBelt",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.0,
+      "MapId": 1
+    },
+    {
+      "Id": "ZorboSouthernBands",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.0,
+      "MapId": 2
+    },
+    {
+      "Id": "ZorboGreatStorm",
+      "AtmosphereScalar": 1.5,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.0,
+      "MapId": 3
+    }
+  ]
+}

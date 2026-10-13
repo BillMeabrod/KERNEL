@@ -1,0 +1,38 @@
+{
+  "Version": "1.0",
+  "BodyName": "Pip",
+  "SituationData": {
+    "HighOrbitMaxAltitude": 600000.0,
+    "LowOrbitMaxAltutude": 30000.0,
+    "AtmosphereMaxAltutude": 0.0,
+    "CelestialBodyScalar": 2.5,
+    "HighOrbitScalar": 1.0,
+    "LowOrbitScalar": 1.5,
+    "AtmosphereScalar": 1.0,
+    "SplashedScalar": 1.0,
+    "LandedScalar": 2.0
+  },
+  "Regions": [
+    {
+      "Id": "PipMaria",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.0,
+      "MapId": 0
+    },
+    {
+      "Id": "PipUplands",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.1,
+      "MapId": 1
+    },
+    {
+      "Id": "PipRidges",
+      "AtmosphereScalar": 1.0,
+      "SplashedScalar": 1.0,
+      "LandedScalar": 1.3,
+      "MapId": 2
+    }
+  ]
+}

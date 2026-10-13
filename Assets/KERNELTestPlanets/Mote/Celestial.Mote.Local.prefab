@@ -1,0 +1,241 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &716250586789677972
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 822356521815242669}
+  - component: {fileID: 5037650888949889224}
+  - component: {fileID: 4440797515452666185}
+  - component: {fileID: 6070291516180675599}
+  - component: {fileID: 6561770467454972235}
+  m_Layer: 14
+  m_Name: Celestial.Mote.Local
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &822356521815242669
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716250586789677972}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5037650888949889224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716250586789677972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 481482756, guid: 06dd3d5416bf43ea368cc39ff96e6d5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp.dll::KSP.Rendering.Planets.PQS
+  settings: {fileID: 0}
+  data: {fileID: 11400000, guid: d2893ae9af95278448232b7ff330f66d, type: 2}
+  collapseDelta: 0
+  visRadDelta: 0
+  visRad: 4
+  parentSphere: {fileID: 0}
+  generatePhysics: 1
+  UseFixedLevel: 0
+  FixedLevel: 2
+  ScaledSpaceTextureGeneratorSettings:
+    IncludeBackground: 1
+    IncludeOcean: 0
+    OceanHeight: 2450
+    OceanColor: {r: 0, g: 0, b: 1, a: 1}
+    ExportDiffuse: 1
+    ExportEmission: 1
+    ExportSpecular: 1
+    ExportNormal: 1
+    OverrideDiffuseTexture: {fileID: 0}
+    OverrideNormalTexture: {fileID: 0}
+    SaveAsPNG: 1
+    PolarNormals: {fileID: 0}
+    TotalLines: 32
+    BlendLines: 16
+    UsePolarNormals: 0
+  isAlive: 0
+  isActive: 1
+  isStarted: 0
+  primaryTargetDistance: 0
+  primaryTargetAltitude: 0
+  isSubdivisionEnabled: 0
+  radiusSquared: 0
+  circumference: 0
+  quadAllowBuild: 0
+  radiusMax: 0
+  radiusMin: 0
+  halfChord: 0
+  PQSRenderer: {fileID: 4440797515452666185}
+  maxRaycastDistance: 1000
+  trackStats: 0
+--- !u!114 &4440797515452666185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716250586789677972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1131462625, guid: 06dd3d5416bf43ea368cc39ff96e6d5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp.dll::KSP.Rendering.Planets.PQSRenderer
+  _oceanSpectrum: {fileID: 0}
+  OceanWaterMaterial: {fileID: 0}
+  OceanLavaMaterial: {fileID: 0}
+  OceanColliderIsTrigger: 0
+  QualitySettingsInDebugScene: 2
+  OceanQualitySetting: 2
+  OceanFeatures:
+    SpectrumPrecision: 0
+    Foam: 0
+    GodRayQuality: 0
+  OceanFeaure_LowQuality:
+    SpectrumPrecision: 0
+    Foam: 0
+    GodRayQuality: 0
+  OceanFeaure_MediumQuality:
+    SpectrumPrecision: 1
+    Foam: 1
+    GodRayQuality: 2
+  OceanFeaure_HighQuality:
+    SpectrumPrecision: 2
+    Foam: 1
+    GodRayQuality: 3
+  needSaveSDF: 0
+  sdfDistance: 0
+  Pqs: {fileID: 5037650888949889224}
+  DrawPQS: 1
+  WatherSphere: 0
+  ForceReload: 0
+  Layer: 15
+  CalculateNormals: 1
+  UseDebugMaterial: 0
+  DebugMaterial: {fileID: 0}
+  SelectSubdivision: 0
+  MinSubdivision: 2
+  MaxSubdivision: 25
+  EnableLowQualityLocal: 0
+  CullBackSideQuads: 0
+  BackSideCutoff: 0.25
+  VisibleQuads: 0
+  GraphicsManager: {fileID: 0}
+  RenderColliderMeshes: 0
+  RenderDepthTexture: 1
+  DiffuseBuffer: {fileID: 0}
+  DepthBuffer: {fileID: 0}
+  BlendDistance: 1
+  NewQuadCount: 0
+  EdgesChangedCount: 0
+  SourceCamera: {fileID: 0}
+  NearClip: 0.1
+  FarClip: 100000
+  _drawPlanetQueued: 0
+--- !u!114 &6070291516180675599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716250586789677972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 981156512, guid: 06dd3d5416bf43ea368cc39ff96e6d5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp.dll::Uber.Scatter.PqsTerrain
+  Pqs: {fileID: 5037650888949889224}
+  MaxHeight: 10000
+  MinReportedCellHeight: 0
+  MaxReportedCellHeight: 50
+  GlobalHeightMap: {fileID: 0}
+  LargeMapR: {fileID: 0}
+  LargeMapG: {fileID: 0}
+  LargeMapB: {fileID: 0}
+  LargeMapA: {fileID: 0}
+  MediumMapR: {fileID: 0}
+  MediumMapG: {fileID: 0}
+  MediumMapB: {fileID: 0}
+  MediumMapA: {fileID: 0}
+  LayerMask: {fileID: 0}
+  GlobalWidth: 0
+  GlobalHeight: 0
+  GlobalMapScale: 0
+  LargeMapWidthR: 0
+  LargeMapHeightR: 0
+  LargeUvScaleR: 0
+  LargeHeightScaleR: 0
+  LargeMapWidthG: 0
+  LargeMapHeightG: 0
+  LargeUvScaleG: 0
+  LargeHeightScaleG: 0
+  LargeMapWidthB: 0
+  LargeMapHeightB: 0
+  LargeUvScaleB: 0
+  LargeHeightScaleB: 0
+  LargeMapWidthA: 0
+  LargeMapHeightA: 0
+  LargeUvScaleA: 0
+  LargeHeightScaleA: 0
+  MediumMapWidthR: 0
+  MediumMapHeightR: 0
+  MediumUvScaleR: 0
+  MediumHeightScaleR: 0
+  MediumMapWidthG: 0
+  MediumMapHeightG: 0
+  MediumUvScaleG: 0
+  MediumHeightScaleG: 0
+  MediumMapWidthB: 0
+  MediumMapHeightB: 0
+  MediumUvScaleB: 0
+  MediumHeightScaleB: 0
+  MediumMapWidthA: 0
+  MediumMapHeightA: 0
+  MediumUvScaleA: 0
+  MediumHeightScaleA: 0
+  TiledHeightMapContrast: 0
+  MaskWidth: 0
+  MaskHeight: 0
+--- !u!114 &6561770467454972235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716250586789677972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 950353776, guid: 06dd3d5416bf43ea368cc39ff96e6d5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp.dll::PQSDecalController
+  PqsDecalData: {fileID: 11400000, guid: 31f8991f4fbe9aa4585a9396aea0df6c, type: 2}
+  Pqs: {fileID: 5037650888949889224}
+  CoreCelestialBodyData: {fileID: 0}
+  SharedHeightmap: {fileID: 2800000, guid: cda7dcb67d4848b4cb71fcd3272e9eaf, type: 3}
+  SharedAlphaMap: {fileID: 2800000, guid: cda7dcb67d4848b4cb71fcd3272e9eaf, type: 3}
+  CurrentTabIndex: 0
+  PqsDecalInstanceList: []
+  PQSDataOutputType: 3
+  DecalMaskTex: {fileID: 0}
+  DecalMaskTextureSize: 512
+  UseMaskTexture: 0
+  DecalHeightFilteringMode: 1
+  DecalAlphaFilteringMode: 1

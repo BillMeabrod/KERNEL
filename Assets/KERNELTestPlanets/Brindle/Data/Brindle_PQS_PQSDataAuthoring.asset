@@ -1,0 +1,526 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eb12dd19b8d7b740a395a8c475d5017, type: 3}
+  m_Name: Brindle_PQS_PQSDataAuthoring
+  m_EditorClassIdentifier: ksp2community.ksp2unitytools.editor::Ksp2UnityTools.Editor.PlanetAuthoring.Authoring.PQSDataAuthoring
+  subzone3Normals:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  subzone4Normals:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  smallLayerSlots:
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  - Material: {fileID: 0}
+    OverrideAlbedoTexture: 0
+    AlbedoTexture: {fileID: 0}
+    OverrideNormalTexture: 0
+    NormalTexture: {fileID: 0}
+    OverrideMetallicTexture: 0
+    MetallicTexture: {fileID: 0}
+    OverrideUVScale: 0
+    UVScale: 1
+    OverrideUVOffset: 0
+    UVOffset: 0
+    OverrideTint: 0
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+    OverrideBrightness: 0
+    Brightness: 0
+    OverrideContrast: 0
+    Contrast: 1
+    OverrideSaturation: 0
+    Saturation: 1
+    OverrideNormalStrength: 0
+    NormalStrength: 1
+    OverrideGlossStrength: 0
+    GlossStrength: 1
+    OverrideMetallicStrength: 0
+    MetallicStrength: 1
+    OverrideAOStrength: 0
+    AOStrength: 1
+    OverrideEmissionStrength: 0
+    EmissionStrength: 0
+    OverrideEmissionColor: 0
+    EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  biomeChannelMapping: 00000000000000000000000000000000i
+  biomeSubzoneMapping: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000i
+  LastSmallTilesPackFingerprint: 
+  ScaledBakeArcPerPixelMeters: 0
+  LastSurfaceBakeFingerprint: 

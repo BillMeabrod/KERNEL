@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dfbe51197cf4ffca39b231277c8041e, type: 3}
+  m_Name: Zorbo_ScienceRegions
+  m_EditorClassIdentifier: ksp2community.ksp2unitytools.editor::Ksp2UnityTools.Editor.ScriptableObjects.ScienceRegionData
+  scienceRegionMap: {fileID: 2800000, guid: 42552bd002440ad4cbbc03cd3a2b77bd, type: 3}
+  information:
+    Version: 1.0
+    BodyName: Zorbo
+    SituationData:
+      HighOrbitMaxAltitude: 1000000000
+      LowOrbitMaxAltutude: 3000000
+      AtmosphereMaxAltutude: 250000
+      CelestialBodyScalar: 1.5
+      HighOrbitScalar: 1
+      LowOrbitScalar: 1.5
+      AtmosphereScalar: 2
+      SplashedScalar: 1
+      LandedScalar: 1
+    ScienceRegionDefinitions:
+    - Id: ZorboNorthernBands
+      AtmosphereScalar: 1
+      SplashedScalar: 1
+      LandedScalar: 1
+      MapId: 0
+      RegionColor: {r: 1, g: 0, b: 0, a: 1}
+    - Id: ZorboVioletBelt
+      AtmosphereScalar: 1
+      SplashedScalar: 1
+      LandedScalar: 1
+      MapId: 1
+      RegionColor: {r: 0, g: 1, b: 0, a: 1}
+    - Id: ZorboSouthernBands
+      AtmosphereScalar: 1
+      SplashedScalar: 1
+      LandedScalar: 1
+      MapId: 2
+      RegionColor: {r: 0, g: 0, b: 1, a: 1}
+    - Id: ZorboGreatStorm
+      AtmosphereScalar: 1.5
+      SplashedScalar: 1
+      LandedScalar: 1
+      MapId: 3
+      RegionColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  discoverables: []
