@@ -72,6 +72,10 @@ namespace KERNEL.Ledger
         public string ParentName;
         // Average distance from the body it orbits; orders siblings innermost first
         public double SemiMajorAxis;
+        // In metres; sizes the body on the system map
+        public double Radius;
+        // False for bodies with no science regions, e.g. ones a mod adds without any; they have no areas
+        public bool HasScience;
 
         public List<AreaEntry> Areas = new();
         public List<BodyEntry> Children = new();

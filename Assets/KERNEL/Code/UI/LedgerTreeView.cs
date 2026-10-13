@@ -51,12 +51,15 @@ namespace KERNEL.UI
             Vector2 scrollOffset = scrollView?.scrollOffset ?? Vector2.zero;
 
             _container.Clear();
-            foreach (BodyEntry body in rootList)
+            foreach (BodyEntry body in rootList.Where(HasAnyScience))
                 _container.Add(BuildBody(body));
 
             // The new content needs a layout pass before the offset can be applied
             scrollView?.schedule.Execute(() => scrollView.scrollOffset = scrollOffset);
         }
+
+        // Bodies without science regions only appear here to hold ones that have them
+        private static bool HasAnyScience(BodyEntry body) => body.HasScience || body.Children.Any(HasAnyScience);
 
         private VisualElement BuildBody(BodyEntry body)
         {
@@ -68,7 +71,7 @@ namespace KERNEL.UI
             // Orbiting bodies first (a star's planets, a planet's moons), then orbits (high to low), then other
             // whole-body areas (atmosphere), then biomes.
             // Both of the last groups sort by real name, even where the name is still hidden as "?????".
-            foreach (BodyEntry child in body.Children)
+            foreach (BodyEntry child in body.Children.Where(HasAnyScience))
                 foldout.Add(BuildBody(child));
             foreach (AreaEntry area in areas.Where(a => a.IsOrbit))
                 foldout.Add(BuildAreaOrUnknown(body, area));

@@ -97,8 +97,18 @@ namespace KERNEL.UI
                     .Build())
                 .Build();
 
+            // Our page's content, inside the tech tree's view so it slides in with the tree and is clipped like it
+            PrefabPatchObjectFragment systemMap = new PrefabPatchObjectBuilder("system-map", "KERNEL-SystemMap")
+                .RectTransform()
+                .Rect(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0f, 0.5f))
+                .Component(PrefabPatchComponentBuilder.For<SystemMap>("system-map")
+                    .Reference("_treeContent", Target(PrefabPatchBuilder.ComponentAt<RectTransform>("Container/TechTree/TreeContainer/TreeContent")))
+                    .Build())
+                .Build();
+
             pm.PatchPrefab(PatchName, PrefabAddress)
                 .AddObject("add-starfield", PrefabPatchBuilder.GameObjectAt("Container"), starfield)
+                .AddObject("add-system-map", PrefabPatchBuilder.GameObjectAt("Container/TechTree/TreeContainer"), systemMap)
                 // Lets the scrollbar reach our page; connected to the tab when the screen starts
                 .AddComponent(
                     "research-scrollbar",
