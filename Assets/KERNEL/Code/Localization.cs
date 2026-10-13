@@ -15,6 +15,9 @@ namespace KERNEL
         public const string SciencePointsGained = "KERNEL/UI/SciencePointsGained";
         public const string BiomeColumn = "KERNEL/UI/BiomeColumn";
         public const string ScienceGainedColumn = "KERNEL/UI/ScienceGainedColumn";
+        public const string FieldReportHint = "KERNEL/UI/FieldReportHint";
+        public const string NoFieldReport = "KERNEL/UI/NoFieldReport";
+        public const string Indecipherable = "KERNEL/UI/Indecipherable";
 
         /// <summary>
         /// Translates one of KERNEL's keys, showing the key itself if it's missing (as the game does).

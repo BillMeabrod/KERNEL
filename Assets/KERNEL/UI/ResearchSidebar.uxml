@@ -1,0 +1,66 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- K.E.R.N.E.L's R&D sidebar: laid over the stock sidebar while the K.E.R.N.E.L page shows, the way Redux lays
+         its tracking station panel over the map. Its data source is a ResearchSidebarViewModel; rows are made in
+         code from the two templates below. -->
+    <ui:Template name="KernelBiomeRow" src="ResearchSidebarBiomeRow.uxml" />
+    <ui:Template name="KernelExperimentRow" src="ResearchSidebarExperimentRow.uxml" />
+    <Style src="ResearchSidebar.uss" />
+    <ui:VisualElement name="kernel-sidebar" class="kernel-sidebar">
+        <ui:VisualElement class="kernel-sidebar__divider" />
+        <ui:Label name="body-name" class="kernel-sidebar__title">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="BodyName" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+        <ui:VisualElement class="kernel-sidebar__stats">
+            <ui:VisualElement class="kernel-sidebar__stat">
+                <ui:Label text="#KERNEL/UI/BiomesExplored" class="kernel-sidebar__label uppercase" />
+                <ui:Label class="kernel-sidebar__value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="BiomesExplored" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+            <ui:VisualElement class="kernel-sidebar__stat">
+                <ui:Label text="#KERNEL/UI/SciencePointsGained" class="kernel-sidebar__label uppercase" />
+                <ui:Label class="kernel-sidebar__value kernel-sidebar__value--science">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="ScienceGained" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="kernel-sidebar__divider" />
+        <ui:VisualElement class="kernel-sidebar__columns">
+            <ui:Label text="#KERNEL/UI/BiomeColumn" class="kernel-sidebar__label uppercase" />
+            <ui:Label text="#KERNEL/UI/ScienceGainedColumn" class="kernel-sidebar__label uppercase" />
+        </ui:VisualElement>
+        <ui:ScrollView name="biome-list" class="kernel-sidebar__list" />
+        <ui:VisualElement class="kernel-sidebar__divider" />
+        <!-- Field report: where Paige sits in the stock sidebar. Shows the hovered experiment's report, or else the
+             selected one's -->
+        <ui:VisualElement name="report" class="kernel-report kernel-report--empty kernel-report--no-title">
+            <ui:Label text="#KERNEL/UI/FieldReport" class="kernel-sidebar__label uppercase" />
+            <ui:VisualElement class="kernel-report__title">
+                <ui:Label class="kernel-report__experiment">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="ReportExperiment" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+                <ui:Label class="kernel-report__place">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="ReportPlace" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+            <ui:Label text="#KERNEL/UI/PartialFieldReport" class="kernel-report__partial" />
+            <ui:ScrollView name="report-scroll" class="kernel-report__scroll">
+                <ui:Label class="kernel-report__text">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="ReportText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:ScrollView>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

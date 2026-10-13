@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using KERNEL.Ledger;
 using KSP.Game;
+using KSP.Rendering;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Object = UnityEngine.Object;
@@ -12,8 +13,8 @@ namespace KERNEL.UI
     /// <summary>
     /// Pixel art for bodies on the system map. Stock bodies use the art shipped with the mod; any other body gets
     /// art made the same way from its own scaled-space texture: a sphere lit from its star's side, brightened and
-    /// reduced to five colours. Stars without art get a pixel sun. Rings are drawn from each body's ring data, as
-    /// a back and a front half so the body sits between them.
+    /// reduced to five colours. Stars without art get a pixel sun in the colour of their light. Rings are drawn
+    /// from each body's ring data, as a back and a front half so the body sits between them.
     ///
     /// Reading a body's surface means loading its planet model, so that's done during save loading for every
     /// registered body without shipped art (see <see cref="Preload"/>), and otherwise one body per frame, so
@@ -42,6 +43,7 @@ namespace KERNEL.UI
         private static readonly Vector3 Light = new Vector3(-0.62f, 0.35f, 0.70f).normalized;
         private const float Rotation = 0.25f;
 
+        // Kerbol's colours, from core to edge; other suns take their hue from their light
         private static readonly Color32[] SunPalette =
         {
             new(255, 250, 214, 255), new(255, 232, 150, 255), new(255, 204, 92, 255), new(246, 160, 58, 255), new(214, 112, 40, 255)
@@ -56,6 +58,9 @@ namespace KERNEL.UI
         private const int SurfaceWidth = 256, SurfaceHeight = 128;
         private static readonly Dictionary<string, Color32[]> Surfaces = new();
         private static readonly Dictionary<string, List<Action<Color32[]>>> SurfaceWaiters = new();
+
+        // Each star's light colour, as authored on its scaled-space model (null when it has none)
+        private static readonly Dictionary<string, Color?> StarLights = new();
 
         // Slow work (loading a model, building a sprite) runs one job per frame
         private static readonly Queue<Action<Action>> Jobs = new();
@@ -112,7 +117,8 @@ namespace KERNEL.UI
 
                 if (body.IsStar)
                 {
-                    Enqueue(jobDone => Run(jobDone, () => Finish(ToSprite(Sun(pixels, body.BodyName)))));
+                    GetStarLight(body.BodyName, light =>
+                        Enqueue(jobDone => Run(jobDone, () => Finish(ToSprite(Sun(pixels, body.BodyName, light))))));
                     return;
                 }
 
@@ -130,7 +136,8 @@ namespace KERNEL.UI
         }
 
         /// <summary>
-        /// Reads the surface of every registered body without shipped art, calling back when they're all ready.
+        /// Reads the surface (or, for a star, the light) of every registered body without shipped art, calling back
+        /// when they're all ready.
         /// Run as a save-loading step so the map doesn't have to.
         /// </summary>
         public static void Preload(Action done)
@@ -151,15 +158,17 @@ namespace KERNEL.UI
             foreach (KeyValuePair<string, KSP.Sim.Definitions.CelestialBodyCore> body in bodies)
             {
                 string name = body.Key;
-                if (body.Value?.data == null || GameManager.Instance.Game.CelestialBodies.GetStarStatus(name))
+                if (body.Value?.data == null)
                 {
                     OneDone();
                     continue;
                 }
 
+                bool isStar = GameManager.Instance.Game.CelestialBodies.GetStarStatus(name);
                 Exists(string.Format(ShippedAddress, name), hasShipped =>
                 {
                     if (hasShipped) OneDone();
+                    else if (isStar) GetStarLight(name, _ => OneDone());
                     else GetSurface(name, _ => OneDone());
                 });
             }
@@ -189,27 +198,58 @@ namespace KERNEL.UI
                 foreach (Action<Color32[]> callback in callbacks) callback(surface);
             }
 
-            string address = string.Format(ScaledPrefabAddress, textureBody);
+            ReadScaledPrefab(textureBody, prefab =>
+            {
+                Texture texture = SurfaceTexture(prefab);
+                return texture != null ? ReadBack(texture, SurfaceWidth, SurfaceHeight) : null;
+            }, Finish);
+        }
+
+        // A star's light colour, read once and kept. It's the colour the game lights everything around the star
+        // with, authored on the star's scaled-space model (the Redux SDK's planet inspector writes it there too).
+        private static void GetStarLight(string star, Action<Color?> done)
+        {
+            if (StarLights.TryGetValue(star, out Color? cached))
+            {
+                done(cached);
+                return;
+            }
+
+            ReadScaledPrefab<Color?>(star, prefab =>
+            {
+                CelestialBodyLighting lighting = prefab != null ? prefab.GetComponentInChildren<CelestialBodyLighting>(true) : null;
+                return lighting?.Data != null ? lighting.Data.color : null;
+            }, light =>
+            {
+                StarLights[star] = light;
+                done(light);
+            });
+        }
+
+        // Loads a body's scaled-space model as a queued job, reads what's needed from it and releases it again;
+        // calls back with default when the body has no model
+        private static void ReadScaledPrefab<T>(string body, Func<GameObject, T> read, Action<T> done)
+        {
+            string address = string.Format(ScaledPrefabAddress, body);
             Exists(address, hasPrefab =>
             {
                 if (!hasPrefab)
                 {
-                    Finish(null);
+                    done(default);
                     return;
                 }
 
                 Enqueue(jobDone => GameManager.Instance.Assets.Load<GameObject>(address, prefab =>
                 {
-                    Color32[] surface = null;
+                    T result = default;
                     try
                     {
-                        Texture texture = SurfaceTexture(prefab);
-                        if (texture != null) surface = ReadBack(texture, SurfaceWidth, SurfaceHeight);
+                        result = read(prefab);
                     }
                     finally
                     {
                         if (prefab != null) GameManager.Instance.Assets.ReleaseAsset(prefab);
-                        Finish(surface);
+                        done(result);
                         jobDone();
                     }
                 }));
@@ -410,9 +450,10 @@ namespace KERNEL.UI
             return texture;
         }
 
-        // A pale core warming to an orange edge, with a stepped glow around it
-        private static Texture2D Sun(int pixels, string name)
+        // A pale core deepening to a coloured edge, with a stepped glow around it
+        private static Texture2D Sun(int pixels, string name, Color? light)
         {
+            Color32[] palette = SunColours(light);
             int glow = Glow(pixels);
             int size = pixels + glow * 2;
             var random = new System.Random(name.GetHashCode());
@@ -426,12 +467,12 @@ namespace KERNEL.UI
                 {
                     float t = d / r + ((float)random.NextDouble() - 0.5f) * 0.18f;
                     int index = t < 0.35f ? 0 : t < 0.62f ? 1 : t < 0.84f ? 2 : t < 0.95f ? 3 : 4;
-                    data[y * size + x] = SunPalette[Mathf.Clamp(index, 0, 4)];
+                    data[y * size + x] = palette[Mathf.Clamp(index, 0, 4)];
                 }
                 else if (d <= r + glow)
                 {
                     float f = 1f - (d - r) / glow;
-                    Color32 edge = SunPalette[3];
+                    Color32 edge = palette[3];
                     edge.a = (byte)(255 * (f > 0.66f ? 0.55f : f > 0.33f ? 0.3f : 0.12f));
                     data[y * size + x] = edge;
                 }
@@ -441,6 +482,27 @@ namespace KERNEL.UI
             texture.SetPixels32(data);
             texture.Apply();
             return texture;
+        }
+
+        // Kerbol's sun colours turned to a light's hue, keeping how pale each step is; a white light gives a white
+        // sun. Without a light (or a black one) a sun keeps Kerbol's colours.
+        private static Color32[] SunColours(Color? light)
+        {
+            if (light == null) return SunPalette;
+
+            // The light is HDR: only its hue and how strongly coloured it is matter here
+            Color c = light.Value;
+            float max = Mathf.Max(c.r, Mathf.Max(c.g, c.b));
+            if (max <= 0f) return SunPalette;
+
+            RgbToHls(new Color(c.r / max, c.g / max, c.b / max), out float hue, out _, out float strength);
+            return SunPalette.Select(step =>
+            {
+                RgbToHls(step, out _, out float l, out float s);
+                Color32 tinted = HlsToRgb(hue, l, s * strength);
+                tinted.a = 255;
+                return tinted;
+            }).ToArray();
         }
 
         private static Color32[] ReadBack(Texture source, int width, int height)

@@ -76,6 +76,15 @@ namespace KERNEL.UI
         private readonly SlidingRect _backgroundSlide = new();
         private readonly SlidingRect _treeSlide = new();
 
+        // Made once, so the per-frame slide allocates nothing
+        private Func<float, float> _backgroundEnd, _treeEnd;
+
+        // How far right of the tier backgrounds' position their end is. Measuring it walks every tier background,
+        // so it's kept until the screen's size or the number of tiers changes.
+        private float _backgroundEndOffset;
+        private Vector2 _measuredScreen = new(-1f, -1f);
+        private int _measuredTiers = -1;
+
         /// <summary>
         /// Registers the R&D screen patch. Patch Manager only accepts prefab patches before the game starts
         /// loading, so this runs from the plugin's OnPreInitialized.
@@ -118,6 +127,7 @@ namespace KERNEL.UI
                     PrefabPatchBuilder.GameObjectAt(ScrollbarPath),
                     PrefabPatchComponentBuilder.For<ResearchScrollbar>("research-scrollbar").Build())
                 .Register();
+
         }
 
         private static PrefabPatchObjectReference Target(PrefabPatchObjectTarget target) =>
@@ -128,6 +138,8 @@ namespace KERNEL.UI
             // Patched-in objects are added last, which would draw it over the whole screen: put it straight
             // after the tier backgrounds instead
             _starfieldRect = (RectTransform)transform;
+            _backgroundEnd = BackgroundEndX;
+            _treeEnd = TreeEndX;
             if (_background != null) _starfieldRect.SetSiblingIndex(_background.GetSiblingIndex() + 1);
 
             if (_scrollbar != null && _scrollbar.TryGetComponent(out ResearchScrollbar scrollbar)) scrollbar.Tab = this;
@@ -307,20 +319,25 @@ namespace KERNEL.UI
             if (_sidebar != null) _sidebar.SetShown(_tab.isOn);
 
             // Carry everything left until the end of the tier backgrounds, and of the tree, leaves the screen
-            _backgroundSlide.Apply(_background, x => _page * BackgroundEndX(x));
-            _treeSlide.Apply(_treeContent, x => _page * TreeEndX(x));
+            _backgroundSlide.Apply(_background, _page, _backgroundEnd);
+            _treeSlide.Apply(_treeContent, _page, _treeEnd);
 
-            // The starfield starts where the tier backgrounds end
+            // The starfield starts where the tier backgrounds end. Positions are only written when they change, so
+            // an idle screen doesn't dirty its canvas every frame.
             Vector2 position = _starfieldRect.anchoredPosition;
-            position.x = BackgroundEndX(_background.anchoredPosition.x) - StarfieldOverlap;
-            _starfieldRect.anchoredPosition = position;
+            float starfieldX = BackgroundEndX(_background.anchoredPosition.x) - StarfieldOverlap;
+            if (!Mathf.Approximately(position.x, starfieldX))
+                _starfieldRect.anchoredPosition = new Vector2(starfieldX, position.y);
 
             // The stock handle travels the tiers' share of the track, which moves over to end in ours
             if (_scrollArea != null)
             {
                 float shift = (1f - _tierShare) * _page;
-                _scrollArea.anchorMin = new Vector2(shift, _scrollArea.anchorMin.y);
-                _scrollArea.anchorMax = new Vector2(_tierShare + shift, _scrollArea.anchorMax.y);
+                if (!Mathf.Approximately(_scrollArea.anchorMin.x, shift))
+                {
+                    _scrollArea.anchorMin = new Vector2(shift, _scrollArea.anchorMin.y);
+                    _scrollArea.anchorMax = new Vector2(_tierShare + shift, _scrollArea.anchorMax.y);
+                }
             }
         }
 
@@ -328,9 +345,17 @@ namespace KERNEL.UI
         private float BackgroundEndX(float x)
         {
             var screen = (RectTransform)_background.parent;
-            Bounds strip = RectTransformUtility.CalculateRelativeRectTransformBounds(_background);
-            Vector3 end = screen.InverseTransformPoint(_background.TransformPoint(new Vector3(strip.max.x, 0f, 0f)));
-            return end.x - screen.rect.xMin + (x - _background.anchoredPosition.x);
+            Vector2 screenSize = screen.rect.size;
+            if (screenSize != _measuredScreen || _background.childCount != _measuredTiers)
+            {
+                _measuredScreen = screenSize;
+                _measuredTiers = _background.childCount;
+                Bounds strip = RectTransformUtility.CalculateRelativeRectTransformBounds(_background);
+                Vector3 end = screen.InverseTransformPoint(_background.TransformPoint(new Vector3(strip.max.x, 0f, 0f)));
+                _backgroundEndOffset = end.x - screen.rect.xMin - _background.anchoredPosition.x;
+            }
+
+            return x + _backgroundEndOffset;
         }
 
         // Where the right end of the tech tree is, from the left edge of its view, with the tree at x
@@ -348,15 +373,19 @@ namespace KERNEL.UI
             private float _base;
             private float _written = float.NaN;
 
-            // offsetFor gets the stock position and returns how far left of it to move
-            public void Apply(RectTransform rect, Func<float, float> offsetFor)
+            // Moves it left by page times how far its end is (endFor gets the stock position); on the last tier,
+            // page is 0 and the stock position stands
+            public void Apply(RectTransform rect, float page, Func<float, float> endFor)
             {
                 Vector2 position = rect.anchoredPosition;
                 if (!Mathf.Approximately(position.x, _written)) _base = position.x;
 
-                position.x = _base - offsetFor(_base);
+                float x = page > 0f ? _base - page * endFor(_base) : _base;
+                _written = x;
+                if (Mathf.Approximately(position.x, x)) return;
+
+                position.x = x;
                 rect.anchoredPosition = position;
-                _written = position.x;
             }
         }
     }

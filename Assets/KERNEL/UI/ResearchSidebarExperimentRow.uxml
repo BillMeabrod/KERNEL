@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- One experiment under an open biome in K.E.R.N.E.L's R&D sidebar; data source: ExperimentRowViewModel.
+         A button, so it highlights and plays the UI sounds like the biome rows; hovering over or clicking it shows
+         its field report at the bottom of the sidebar. -->
+    <ui:Button name="experiment" class="kernel-experiment">
+        <ui:Label class="kernel-experiment__name">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Name" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+        <ui:Label name="situation" class="kernel-experiment__situation">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Situation" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+        <ui:Label name="tally" class="kernel-experiment__tally">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Tally" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+    </ui:Button>
+</ui:UXML>

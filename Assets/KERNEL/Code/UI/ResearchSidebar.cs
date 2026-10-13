@@ -1,172 +1,208 @@
 using System.Collections.Generic;
 using System.Linq;
 using KERNEL.Ledger;
-using KSP.Api.CoreTypes;
+using KSP.Game;
 using KSP.Game.Science;
-using KSP.UI.Binding;
-using TMPro;
+using KSP.Messages;
+using UitkForKsp2.API;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace KERNEL.UI
 {
     /// <summary>
-    /// Turns the R&D sidebar into the selected body's science while K.E.R.N.E.L's page is showing: its name
-    /// (through the screen's own TechNodeName value), how many of its biomes have been explored and how much
-    /// science has been gained there, then each biome with the experiments that can be run in it. The stock
-    /// sections it replaces are hidden while the page shows and restored afterwards. Follows the same spoiler
-    /// rules as the ledger window: only unlocked experiments, and "?????" for places not yet visited.
+    /// The selected body's science, shown over the R&D sidebar while K.E.R.N.E.L's page shows: its name, how many of
+    /// its biomes have been explored and how much science has been gained there, then each biome with the
+    /// experiments that can be run in it. Hovering over or selecting an experiment shows what it reported in the
+    /// field at the bottom, where Paige sits in the stock sidebar; with only part of its science collected, part of
+    /// the report is lost. Follows the same spoiler rules as the ledger window: only unlocked experiments, and
+    /// "?????" for places not yet visited.
+    ///
+    /// Built the way Redux adds its tracking station panel to the map: a UI Toolkit window parented to the screen
+    /// (so it lives and dies with it), a view model bound by Unity's data binding, rows made from UXML templates,
+    /// and UitkForKsp2's localization and UI sounds. It covers the stock sidebar rather than changing it. Its panel
+    /// isn't part of the screen's canvas, so it follows the game state the way the screen does: shown only in R&D.
     /// </summary>
     public class ResearchSidebar : MonoBehaviour
     {
-        // Redux's sidebar, swapped in when the screen starts
-        private const string SidebarPath = "Container/TechNodeInfo";
-        private const string TitleKey = "TechNodeName";
+        private const string UxmlAddress = "KERNEL/ResearchSidebar.uxml";
+        private const string BiomeRowTemplate = "ResearchSidebarBiomeRow";
+        private const string ExperimentRowTemplate = "ResearchSidebarExperimentRow";
 
-        // The stock sections our panel takes the place of, in the sidebar's Content
-        private static readonly string[] StockSections =
-            { "TechNodeDescription", "PartsAcquired", "PartsListScrollView", "PartsList", "Footer", "ResearchButton" };
-        private const string DividerPath = "Footer/Divider";
-        // The parts list's scrollbar, copied for the biome list so it scrolls the same way
-        private const string ScrollbarPath = "PartsListScrollView/PartsListScrollbar";
-        private const float ScrollbarGap = 6f;
+        // Redux's sidebar, swapped in when the screen starts; ours is laid exactly over it
+        private const string StockSidebarPath = "Container/TechNodeInfo";
 
-        // The sidebar's own text styles
-        private static readonly Color LabelColor = new(0.729f, 0.706f, 0.659f);
-        private static readonly Color BodyColor = new(0.670f, 0.700f, 0.800f);
-        private static readonly Color NameColor = new(0.839f, 0.839f, 0.851f);
-        private static readonly Color ScienceColor = new(0.373f, 0.749f, 0.894f);
-        private static readonly Color SituationColor = new(0.906f, 0.792f, 0.463f);
-        private static readonly Color CompleteColor = new(0.39f, 0.84f, 0.56f);
-        private static readonly Color UnknownColor = new(0.427f, 0.451f, 0.529f);
-        private static readonly Color HoverColor = new(1f, 1f, 1f, 0.06f);
-        private static readonly Color ArrowColor = new(0.863f, 0.757f, 0.506f);
-
-        private const float RowHeight = 34f;
-        private const float ExperimentIndent = 30f;
-
-        private Property<string> _title;
-        private string _savedTitle;
-        private readonly Dictionary<GameObject, bool> _hiddenSections = new();
-        private RectTransform _panel, _rows;
-        private ScrollRect _scroll;
-        private TextMeshProUGUI _biomesValue, _scienceValue;
-        private Sprite _divider;
-        private Image.Type _dividerType;
-        private Color _dividerColor;
-        private static Sprite _arrow;
-
+        private RDCenterUIController _screen;
         private SystemMap _map;
         private BodyEntry _body;
         private bool _shown, _dirty;
 
-        // Which biomes are open, by body and area, kept across rebuilds
-        private readonly HashSet<string> _expanded = new();
+        // The R&D screen stays alive when another building is opened; only the game state says it's showing
+        private bool _inResearch = true;
+        private SubscriptionHandle _onGameStateChange;
+
+        private PanelRenderer _window;
+        private VisualElement _panel;
+        private ScrollView _list;
+        private VisualElement _report;
+        private ScrollView _reportScroll;
+        private VisualTreeAsset _biomeRow, _experimentRow;
+        private readonly ResearchSidebarViewModel _model = new();
+        private Rect _placedAt;
+
+        // Which biomes are open, by body and area, kept across refreshes
+        private readonly HashSet<string> _open = new();
+
+        // The field report shows the hovered experiment, or else the selected one; the selection is kept across
+        // refreshes by key
+        private ExperimentRowViewModel _hovered, _selected;
+        private VisualElement _selectedRow;
+        private string _selectedKey;
 
         public static ResearchSidebar Attach(RDCenterUIController screen, SystemMap map)
         {
-            Transform sidebar = screen.transform.Find(SidebarPath);
-            if (sidebar == null) return null;
+            var sidebar = screen.gameObject.AddComponent<ResearchSidebar>();
+            sidebar._screen = screen;
+            sidebar._map = map;
+            if (map != null)
+            {
+                map.Selected += sidebar.ShowBody;
+                sidebar._body = map.SelectedBody;
+            }
 
-            var component = sidebar.gameObject.AddComponent<ResearchSidebar>();
-            component.Initialize(screen, map);
-            return component;
+            sidebar._onGameStateChange = GameManager.Instance.Game.Messages.Subscribe<GameStateChangedMessage>(sidebar.OnGameStateChanged);
+            GameManager.Instance.Assets.Load<VisualTreeAsset>(UxmlAddress, sidebar.CreateWindow);
+            return sidebar;
         }
 
-        private void Initialize(RDCenterUIController screen, SystemMap map)
+        private void CreateWindow(VisualTreeAsset uxml)
         {
-            if (screen.TryGetComponent(out ContextBindRoot bindRoot)
-                && bindRoot.Context.TryResolveProperty(TitleKey, out var property))
-                _title = property as Property<string>;
+            if (uxml == null || this == null) return;
 
-            Transform content = transform.Find("Content");
-            if (content?.Find(DividerPath)?.GetComponent<Image>() is { } divider)
+            _biomeRow = uxml.templateDependencies.FirstOrDefault(t => t.name == BiomeRowTemplate);
+            _experimentRow = uxml.templateDependencies.FirstOrDefault(t => t.name == ExperimentRowTemplate);
+
+            WindowOptions options = WindowOptions.Default;
+            options.WindowId = "KERNEL_ResearchSidebar";
+            options.Parent = _screen.transform;
+            options.UseStockScale = true;
+            options.BringToFrontOnPointerDown = false;
+            options.MoveOptions = new MoveOptions { IsMovingEnabled = false, CheckScreenBounds = false };
+            _window = Window.Create(options, uxml);
+
+            _window.OnPanelRoot(root =>
             {
-                _divider = divider.sprite;
-                _dividerType = divider.type;
-                _dividerColor = divider.color;
-            }
+                root.dataSource = _model;
+                _panel = root.Q("kernel-sidebar");
+                _list = root.Q<ScrollView>("biome-list");
+                _report = root.Q("report");
+                _reportScroll = root.Q<ScrollView>("report-scroll");
+                _dirty = true;
+            });
+            _window.EnableLocalization();
+            _window.EnableUiSounds();
+            // As Redux does: the window's container covers the screen, and the panel is placed within it
+            _window.OnWindowRoot(StretchWindowContainer);
 
-            BuildPanel(content);
+            if (!IsVisible) _window.Hide();
+        }
 
-            _map = map;
-            if (_map != null)
-            {
-                _map.Selected += ShowBody;
-                _body = _map.SelectedBody;
-            }
+        private static void StretchWindowContainer(VisualElement windowRoot)
+        {
+            VisualElement container = windowRoot?.parent;
+            if (container == null) return;
+            container.style.width = new StyleLength(Length.Percent(100f));
+            container.style.height = new StyleLength(Length.Percent(100f));
         }
 
         private void OnDestroy()
         {
             if (_map != null) _map.Selected -= ShowBody;
+            if (GameManager.Instance?.Game?.Messages != null && !GameManager.Instance.Game.ShutdownInProgress)
+                GameManager.Instance.Game.Messages.Unsubscribe(ref _onGameStateChange);
         }
 
         /// <summary>
-        /// Shows our panel in place of the stock sections, or puts them back.
+        /// Shows the sidebar over the stock one, or hides it again.
         /// </summary>
         public void SetShown(bool shown)
         {
-            if (shown == _shown || _panel == null) return;
+            if (shown == _shown) return;
             _shown = shown;
+            UpdateVisibility();
+        }
 
-            if (shown)
+        private bool IsVisible => _shown && _inResearch;
+
+        private void OnGameStateChanged(MessageCenterMessage message)
+        {
+            _inResearch = ((GameStateChangedMessage)message).CurrentState == GameState.ResearchAndDevelopment;
+            UpdateVisibility();
+        }
+
+        private void UpdateVisibility()
+        {
+            if (_window == null) return;
+
+            if (IsVisible)
             {
-                _hiddenSections.Clear();
-                foreach (string name in StockSections)
-                {
-                    Transform section = _panel.parent.Find(name);
-                    if (section == null) continue;
-                    _hiddenSections[section.gameObject] = section.gameObject.activeSelf;
-                    section.gameObject.SetActive(false);
-                }
-
-                _savedTitle = _title?.GetValue();
-                _panel.gameObject.SetActive(true);
+                _window.Show();
                 _dirty = true;
             }
-            else
-            {
-                _panel.gameObject.SetActive(false);
-                foreach (KeyValuePair<GameObject, bool> section in _hiddenSections)
-                    if (section.Key != null) section.Key.SetActive(section.Value);
-                _hiddenSections.Clear();
-                if (_title != null && _savedTitle != null) _title.SetValue(_savedTitle);
-            }
+            else _window.Hide();
         }
 
         private void ShowBody(BodyEntry body)
         {
+            if (body != _body) _selectedKey = null;
             _body = body;
             _dirty = true;
         }
 
         /// <summary>
-        /// Whether the pointer is over the biome list, whose scrolling shouldn't also scroll the page.
+        /// Whether the pointer is over the biome list or the field report, whose scrolling shouldn't also scroll the page.
         /// </summary>
         public bool IsPointerOverList(Vector2 screenPoint)
         {
-            if (!_shown || _scroll == null) return false;
-            Canvas parent = _scroll.GetComponentInParent<Canvas>();
-            Canvas canvas = parent != null ? parent.rootCanvas : null;
-            Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
-            return RectTransformUtility.RectangleContainsScreenPoint((RectTransform)_scroll.transform, screenPoint, camera);
+            if (!IsVisible || _list?.panel == null) return false;
+            Vector2 point = RuntimePanelUtils.ScreenToPanel(_list.panel, new Vector2(screenPoint.x, Screen.height - screenPoint.y));
+            return _list.worldBound.Contains(point) || (_reportScroll != null && _reportScroll.worldBound.Contains(point));
         }
 
         private void LateUpdate()
         {
-            if (!_shown || _body == null) return;
+            if (!IsVisible || _panel == null) return;
 
-            // The stock screen sets the title when it refreshes its node; keep ours while the page shows
-            if (_title != null && _title.GetValue() != _body.DisplayName)
-            {
-                _savedTitle = _title.GetValue();
-                _title.SetValue(_body.DisplayName);
-            }
-
-            if (_dirty) Refresh();
+            PlaceOverStockSidebar();
+            if (_dirty && _body != null) Refresh();
         }
+
+        // Matches the stock sidebar's place and size on screen, whatever the resolution and UI scale
+        private void PlaceOverStockSidebar()
+        {
+            if (_panel.panel == null || !(_screen.transform.Find(StockSidebarPath) is RectTransform stock)) return;
+
+            Canvas canvas = stock.GetComponentInParent<Canvas>();
+            canvas = canvas != null ? canvas.rootCanvas : null;
+            Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+
+            var corners = new Vector3[4];
+            stock.GetWorldCorners(corners);
+            Vector2 min = ToPanel(RectTransformUtility.WorldToScreenPoint(camera, corners[1]));
+            Vector2 max = ToPanel(RectTransformUtility.WorldToScreenPoint(camera, corners[3]));
+            var rect = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            if (rect == _placedAt) return;
+
+            _placedAt = rect;
+            _panel.style.left = rect.x;
+            _panel.style.top = rect.y;
+            _panel.style.width = rect.width;
+            _panel.style.height = rect.height;
+        }
+
+        // Screen points run bottom up; panel points top down
+        private Vector2 ToPanel(Vector2 screenPoint) =>
+            RuntimePanelUtils.ScreenToPanel(_panel.panel, new Vector2(screenPoint.x, Screen.height - screenPoint.y));
 
         private void Refresh()
         {
@@ -174,346 +210,161 @@ namespace KERNEL.UI
             List<AreaEntry> areas = _body.ShownAreas().ToList();
             List<LocationEntry> locations = areas.SelectMany(a => a.UnlockedLocations).ToList();
 
-            _biomesValue.text = $"{areas.Count(a => a.HasSubmissions)} / {areas.Count}";
-            _scienceValue.text = Tally(locations.Sum(l => l.Earned), locations.Sum(l => l.Possible));
-
-            float scroll = _scroll.verticalNormalizedPosition;
-            // Detached first: Destroy only takes effect at the end of the frame, and the layout below must not
-            // count the old rows
-            for (int i = _rows.childCount - 1; i >= 0; i--)
-            {
-                Transform row = _rows.GetChild(i);
-                row.SetParent(null, false);
-                Destroy(row.gameObject);
-            }
-            foreach (AreaEntry area in areas) AddArea(area);
+            _model.BodyName = _body.DisplayName;
+            _model.BiomesExplored = $"{areas.Count(a => a.HasSubmissions)} / {areas.Count}";
+            _model.ScienceGained = Tally(locations.Sum(l => l.Earned), locations.Sum(l => l.Possible));
 
             // Keep the place in the list when the same body refreshes (e.g. after scoring a report)
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_rows);
-            _scroll.verticalNormalizedPosition = scroll;
+            Vector2 scroll = _list.scrollOffset;
+            _hovered = _selected = null;
+            _selectedRow = null;
+            _list.Clear();
+            foreach (AreaEntry area in areas) _list.Add(BiomeRow(area));
+            _list.schedule.Execute(() => _list.scrollOffset = scroll);
+            if (_selected == null) _selectedKey = null;
+            ShowReport();
         }
 
-        private void BuildPanel(Transform content)
-        {
-            if (content == null) return;
-
-            _panel = NewRect("KERNEL-Science", content);
-            Transform description = content.Find(StockSections[0]);
-            if (description != null) _panel.SetSiblingIndex(description.GetSiblingIndex());
-            var panelLayout = _panel.gameObject.AddComponent<VerticalLayoutGroup>();
-            panelLayout.spacing = 12f;
-            panelLayout.childControlWidth = panelLayout.childControlHeight = true;
-            panelLayout.childForceExpandWidth = true;
-            panelLayout.childForceExpandHeight = false;
-            Layout(_panel, flexibleHeight: 1f, minHeight: 200f);
-
-            // Biomes explored and science gained, side by side
-            RectTransform stats = Row(_panel, "Stats", 64f, forceExpandWidth: true);
-            stats.GetComponent<HorizontalLayoutGroup>().spacing = 20f;
-            _biomesValue = Stat(stats, Localization.BiomesExplored, Color.white);
-            _scienceValue = Stat(stats, Localization.SciencePointsGained, ScienceColor);
-
-            Divider(_panel);
-
-            // Column headings
-            RectTransform columns = Row(_panel, "Columns", 24f);
-            var columnsLayout = columns.GetComponent<HorizontalLayoutGroup>();
-            columnsLayout.padding = new RectOffset(8, 12, 0, 0);
-            columnsLayout.spacing = 16f;
-            TextMeshProUGUI biome = Label(columns, Localization.Translate(Localization.BiomeColumn), 13f, LabelColor, TextAlignmentOptions.Left);
-            biome.fontStyle = FontStyles.UpperCase;
-            biome.characterSpacing = 1f;
-            Layout(biome.rectTransform, flexibleWidth: 1f);
-            TextMeshProUGUI science = Label(columns, Localization.Translate(Localization.ScienceGainedColumn), 13f, LabelColor, TextAlignmentOptions.Right);
-            science.fontStyle = FontStyles.UpperCase;
-            science.characterSpacing = 1f;
-
-            // The biome list, scrolling when it's longer than the panel
-            RectTransform list = NewRect("Biomes", _panel);
-            Layout(list, flexibleHeight: 1f, minHeight: 120f);
-            _scroll = list.gameObject.AddComponent<ScrollRect>();
-            _scroll.horizontal = false;
-            _scroll.movementType = ScrollRect.MovementType.Clamped;
-            _scroll.scrollSensitivity = 24f;
-
-            RectTransform viewport = NewRect("Viewport", list);
-            Stretch(viewport);
-            viewport.gameObject.AddComponent<RectMask2D>();
-            viewport.gameObject.AddComponent<Image>().color = Color.clear;
-            _scroll.viewport = viewport;
-
-            _rows = NewRect("Rows", viewport);
-            _rows.anchorMin = new Vector2(0f, 1f);
-            _rows.anchorMax = new Vector2(1f, 1f);
-            _rows.pivot = new Vector2(0.5f, 1f);
-            _rows.sizeDelta = Vector2.zero;
-            var rowsLayout = _rows.gameObject.AddComponent<VerticalLayoutGroup>();
-            rowsLayout.spacing = 2f;
-            rowsLayout.childControlWidth = rowsLayout.childControlHeight = true;
-            rowsLayout.childForceExpandWidth = true;
-            rowsLayout.childForceExpandHeight = false;
-            _rows.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            _scroll.content = _rows;
-
-            if (content.Find(ScrollbarPath) is { } stockScrollbar && stockScrollbar.TryGetComponent(out Scrollbar _))
-            {
-                GameObject copy = Instantiate(stockScrollbar.gameObject, list, false);
-                copy.name = "Scrollbar";
-                var scrollbar = copy.GetComponent<Scrollbar>();
-                scrollbar.onValueChanged.RemoveAllListeners();
-                scrollbar.direction = Scrollbar.Direction.BottomToTop;
-                var bar = (RectTransform)copy.transform;
-                float width = Mathf.Max(bar.rect.width, 8f);
-                bar.anchorMin = new Vector2(1f, 0f);
-                bar.anchorMax = Vector2.one;
-                bar.pivot = new Vector2(1f, 0.5f);
-                bar.sizeDelta = new Vector2(width, 0f);
-                bar.anchoredPosition = Vector2.zero;
-                _scroll.verticalScrollbar = scrollbar;
-                _scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
-                _scroll.verticalScrollbarSpacing = ScrollbarGap;
-            }
-
-            _panel.gameObject.SetActive(false);
-        }
-
-        private void AddArea(AreaEntry area)
+        private VisualElement BiomeRow(AreaEntry area)
         {
             List<LocationEntry> locations = area.UnlockedLocations.ToList();
             float earned = locations.Sum(l => l.Earned), possible = locations.Sum(l => l.Possible);
+            string name = area.IsKnown ? area.DisplayName : Localization.Translate(Localization.UnknownArea);
             string key = $"{_body.BodyName}/{area.Id}";
+            var model = new BiomeRowViewModel(name, Tally(earned, possible), area.IsKnown, possible > 0f && earned >= possible);
 
-            RectTransform row = Row(_rows, area.Id, RowHeight);
-            var rowLayout = row.GetComponent<HorizontalLayoutGroup>();
-            rowLayout.padding = new RectOffset(8, 12, 6, 6);
-            rowLayout.spacing = 8f;
-            var background = row.gameObject.AddComponent<Image>();
-            background.color = Color.clear;
+            TemplateContainer row = _biomeRow.Instantiate();
+            row.dataSource = model;
+            VisualElement biome = row.Q(className: "kernel-biome");
+            if (!area.IsKnown) biome.AddToClassList("kernel-biome--unknown");
+            if (model.IsComplete) row.Q("tally").AddToClassList("kernel--complete");
 
-            Graphic arrow;
             if (area.IsKnown)
             {
-                var image = NewRect("Arrow", row).gameObject.AddComponent<Image>();
-                image.sprite = Arrow;
-                image.color = ArrowColor;
-                arrow = image;
-            }
-            else
-            {
-                // Nothing to open yet: a short dash in place of the arrow
-                RectTransform slot = NewRect("Dash", row);
-                Layout(slot, preferredWidth: 12f, preferredHeight: 12f);
-                var dash = NewRect("Line", slot).gameObject.AddComponent<Image>();
-                dash.color = UnknownColor;
-                dash.rectTransform.sizeDelta = new Vector2(8f, 2f);
-                arrow = dash;
-            }
-
-            if (area.IsKnown) Layout(arrow.rectTransform, preferredWidth: 12f, preferredHeight: 12f);
-            arrow.raycastTarget = false;
-
-            string title = area.IsKnown ? area.DisplayName : Localization.Translate(Localization.UnknownArea);
-            TextMeshProUGUI name = Label(row, title, 16f, area.IsKnown ? NameColor : UnknownColor, TextAlignmentOptions.Left);
-            Layout(name.rectTransform, flexibleWidth: 1f);
-            bool complete = possible > 0f && earned >= possible;
-            Label(row, Tally(earned, possible), 13f, complete ? CompleteColor : BodyColor, TextAlignmentOptions.Right);
-
-            RectTransform experiments = null;
-            if (area.IsKnown)
-            {
-                experiments = NewRect("Experiments", _rows);
-                var group = experiments.gameObject.AddComponent<VerticalLayoutGroup>();
-                group.childControlWidth = group.childControlHeight = true;
-                group.childForceExpandWidth = true;
-                group.childForceExpandHeight = false;
                 // Whole-body areas are named after their situation, so their rows don't repeat it
-                foreach (LocationEntry location in locations) AddExperiment(experiments, location, showSituation: !area.IsWholeBody);
+                VisualElement experiments = row.Q("experiments");
+                foreach (LocationEntry location in locations)
+                    experiments.Add(ExperimentRow(location, $"{key}/{location.Location.ResearchLocationId}", name, showSituation: !area.IsWholeBody));
+
+                model.OpenChanged += open =>
+                {
+                    biome.EnableInClassList("kernel-biome--open", open);
+                    if (open) _open.Add(key);
+                    else _open.Remove(key);
+                };
+                model.IsOpen = _open.Contains(key);
+                row.Q<Button>("header").clicked += model.Toggle;
             }
 
-            row.gameObject.AddComponent<BiomeRow>().Initialize(this, key, background, arrow.rectTransform, experiments);
-        }
-
-        private static void AddExperiment(Transform parent, LocationEntry location, bool showSituation)
-        {
-            RectTransform row = Row(parent, location.Experiment.ExperimentID, 24f);
-            var layout = row.GetComponent<HorizontalLayoutGroup>();
-            layout.padding = new RectOffset((int)ExperimentIndent, 12, 2, 2);
-            layout.spacing = 6f;
-
-            string experiment = Localization.Translate(location.Experiment.DisplayName, location.Experiment.ExperimentID);
-            TextMeshProUGUI name = Label(row, experiment, 14f, BodyColor, TextAlignmentOptions.Left);
-            if (showSituation)
-                Label(row, location.Location.ScienceSituation.GetTranslatedDescription(), 12f, SituationColor, TextAlignmentOptions.Left);
-            Layout(name.rectTransform, flexibleWidth: 1f);
-            Label(row, Tally(location.Earned, location.Possible), 12f, location.IsComplete ? CompleteColor : BodyColor, TextAlignmentOptions.Right);
-        }
-
-        private TextMeshProUGUI Stat(Transform parent, string labelKey, Color valueColor)
-        {
-            RectTransform column = NewRect(labelKey, parent);
-            var layout = column.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 2f;
-            layout.childControlWidth = layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
-
-            TextMeshProUGUI label = Label(column, Localization.Translate(labelKey), 13f, LabelColor, TextAlignmentOptions.BottomLeft);
-            label.fontStyle = FontStyles.UpperCase;
-            label.characterSpacing = 1f;
-            label.textWrappingMode = TextWrappingModes.Normal;
-            label.overflowMode = TextOverflowModes.Overflow;
-            return Label(column, "", 20f, valueColor, TextAlignmentOptions.Left);
-        }
-
-        private void Divider(Transform parent)
-        {
-            var divider = NewRect("Divider", parent).gameObject.AddComponent<Image>();
-            divider.sprite = _divider;
-            divider.type = _divider != null ? _dividerType : Image.Type.Simple;
-            divider.color = _divider != null ? _dividerColor : new Color(0.670f, 0.700f, 0.800f, 0.2f);
-            divider.raycastTarget = false;
-            Layout(divider.rectTransform, preferredHeight: 8f, minHeight: 8f);
-        }
-
-        private static RectTransform Row(Transform parent, string name, float height, bool forceExpandWidth = false)
-        {
-            RectTransform row = NewRect(name, parent);
-            var layout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleLeft;
-            layout.childControlWidth = layout.childControlHeight = true;
-            layout.childForceExpandWidth = forceExpandWidth;
-            layout.childForceExpandHeight = false;
-            Layout(row, preferredHeight: height, minHeight: height);
             return row;
         }
 
-        private static TextMeshProUGUI Label(Transform parent, string text, float size, Color color, TextAlignmentOptions alignment)
+        private VisualElement ExperimentRow(LocationEntry location, string key, string place, bool showSituation)
         {
-            var label = NewRect("Text", parent).gameObject.AddComponent<TextMeshProUGUI>();
-            label.text = text;
-            label.fontSize = size;
-            label.color = color;
-            label.alignment = alignment;
-            label.textWrappingMode = TextWrappingModes.NoWrap;
-            label.overflowMode = TextOverflowModes.Ellipsis;
-            label.raycastTarget = false;
+            string situation = location.Location.ScienceSituation.GetTranslatedDescription();
+            var model = new ExperimentRowViewModel(
+                $"{key}/{location.Experiment.ExperimentID}",
+                Localization.Translate(location.Experiment.DisplayName, location.Experiment.ExperimentID),
+                showSituation ? $"{place}, {situation}" : place,
+                showSituation ? situation : string.Empty,
+                Tally(location.Earned, location.Possible),
+                location.IsComplete,
+                FlavorText(location),
+                location.Possible > 0f ? location.Earned / location.Possible : 0f);
 
-            TextMeshProUGUI font = ResearchUi.FontSource(parent);
-            if (font != null)
-            {
-                label.font = font.font;
-                label.fontSharedMaterial = font.fontSharedMaterial;
-            }
+            TemplateContainer row = _experimentRow.Instantiate();
+            row.dataSource = model;
+            if (model.IsComplete) row.Q("tally").AddToClassList("kernel--complete");
+            if (!showSituation) row.Q("situation").style.display = DisplayStyle.None;
 
-            return label;
+            // Hovering over the row shows its field report; clicking it keeps it there until clicked again
+            var button = row.Q<Button>("experiment");
+            button.RegisterCallback<PointerEnterEvent>(_ => Hover(model, true));
+            button.RegisterCallback<PointerLeaveEvent>(_ => Hover(model, false));
+            button.clicked += () => Select(model, button);
+            if (model.Key == _selectedKey) Select(model, button);
+
+            return row;
         }
 
-        private static void Layout(RectTransform rect, float flexibleWidth = -1f, float flexibleHeight = -1f,
-            float preferredWidth = -1f, float preferredHeight = -1f, float minHeight = -1f)
+        private void Hover(ExperimentRowViewModel row, bool over)
         {
-            if (!rect.TryGetComponent(out LayoutElement element)) element = rect.gameObject.AddComponent<LayoutElement>();
-            element.flexibleWidth = flexibleWidth;
-            element.flexibleHeight = flexibleHeight;
-            element.preferredWidth = preferredWidth;
-            element.preferredHeight = preferredHeight;
-            element.minWidth = preferredWidth;
-            element.minHeight = minHeight;
+            if (over) _hovered = row;
+            else if (_hovered == row) _hovered = null;
+            ShowReport();
+        }
+
+        private void Select(ExperimentRowViewModel row, VisualElement element)
+        {
+            _selectedRow?.RemoveFromClassList("kernel-experiment--selected");
+            bool deselect = _selected == row;
+            _selected = deselect ? null : row;
+            _selectedRow = deselect ? null : element;
+            _selectedKey = _selected?.Key;
+            _selectedRow?.AddToClassList("kernel-experiment--selected");
+            ShowReport();
+        }
+
+        private void ShowReport()
+        {
+            if (_report == null) return;
+
+            ExperimentRowViewModel row = _hovered ?? _selected;
+            bool hasText = row != null && !string.IsNullOrEmpty(row.FlavorText);
+            bool partial = hasText && !row.IsComplete && row.Received < 1f;
+
+            _model.ReportExperiment = row?.Name ?? string.Empty;
+            _model.ReportPlace = row?.Place ?? string.Empty;
+            _model.ReportText = row == null ? Localization.Translate(Localization.FieldReportHint)
+                : !hasText ? Localization.Translate(Localization.NoFieldReport)
+                : partial ? Redact(row.FlavorText, row.Received, row.Key)
+                : row.FlavorText;
+
+            _report.EnableInClassList("kernel-report--no-title", row == null);
+            _report.EnableInClassList("kernel-report--empty", !hasText);
+            _report.EnableInClassList("kernel-report--partial", partial);
+            _reportScroll.scrollOffset = Vector2.zero;
+        }
+
+        // A partly received report loses one run of words, as long as the share of science still to collect.
+        // Where it falls is picked from the key, so the same report always reads the same.
+        private static string Redact(string text, float received, string key)
+        {
+            string[] words = text.Split(' ');
+            if (words.Length < 2) return text;
+
+            int count = Mathf.Clamp(Mathf.RoundToInt(words.Length * (1f - received)), 1, words.Length - 1);
+            int start = (int)(Hash(key) % (uint)(words.Length - count + 1));
+            string lost = $"<color=#6D7387><noparse>{Localization.Translate(Localization.Indecipherable)}</noparse></color>";
+            return string.Join(" ", words.Take(start).Append(lost).Concat(words.Skip(start + count)));
+        }
+
+        // FNV-1a, stable across runs (unlike string.GetHashCode)
+        private static uint Hash(string text)
+        {
+            uint hash = 2166136261;
+            foreach (char c in text) hash = (hash ^ c) * 16777619;
+            return hash;
+        }
+
+        // The text each submitted report (data, then sample) came back with, as the game words it
+        private static string FlavorText(LocationEntry location)
+        {
+            ScienceExperimentsDataStore store = GameManager.Instance?.Game?.ScienceManager?.ScienceExperimentsDataStore;
+            if (store == null) return string.Empty;
+
+            var texts = new List<string>();
+            foreach ((ReportEntry report, ScienceReportType type) in new[] { (location.Data, ScienceReportType.DataType), (location.Sample, ScienceReportType.SampleType) })
+            {
+                if (report == null || !report.IsSubmitted) continue;
+                string key = store.GetFlavorText(location.Experiment.ExperimentID, location.Location.ResearchLocationId, type);
+                string text = Localization.Translate(key, string.Empty);
+                if (!string.IsNullOrEmpty(text)) texts.Add(text);
+            }
+
+            return string.Join("\n\n", texts);
         }
 
         private static string Tally(float earned, float possible) => $"{earned:#,0.#} / {possible:#,0.#}";
-
-        private static RectTransform NewRect(string name, Transform parent)
-        {
-            var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
-            rect.SetParent(parent, false);
-            return rect;
-        }
-
-        private static void Stretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.sizeDelta = Vector2.zero;
-        }
-
-        // A small smooth-edged white triangle pointing right, turned to point down when its biome is open
-        private static Sprite Arrow
-        {
-            get
-            {
-                if (_arrow != null) return _arrow;
-                const int size = 32;
-                var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-                // Corners counter-clockwise, so a point is inside when it's on the left of every edge
-                var corners = new[] { new Vector2(6f, 4f), new Vector2(28f, 16f), new Vector2(6f, 28f) };
-                for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    var point = new Vector2(x + 0.5f, y + 0.5f);
-                    float inside = float.MaxValue;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        Vector2 from = corners[i], edge = corners[(i + 1) % 3] - from;
-                        inside = Mathf.Min(inside, (edge.x * (point.y - from.y) - edge.y * (point.x - from.x)) / edge.magnitude);
-                    }
-
-                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(inside + 0.5f)));
-                }
-
-                texture.Apply();
-                _arrow = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
-                return _arrow;
-            }
-        }
-
-        /// <summary>
-        /// One biome: highlights on hover and opens its experiments when clicked, with the tier tabs' sounds.
-        /// Biomes not yet visited don't open.
-        /// </summary>
-        private class BiomeRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
-        {
-            private ResearchSidebar _sidebar;
-            private string _key;
-            private Image _background;
-            private RectTransform _arrow, _experiments;
-
-            public void Initialize(ResearchSidebar sidebar, string key, Image background, RectTransform arrow, RectTransform experiments)
-            {
-                _sidebar = sidebar;
-                _key = key;
-                _background = background;
-                _arrow = arrow;
-                _experiments = experiments;
-                SetOpen(experiments != null && sidebar._expanded.Contains(key));
-            }
-
-            public void OnPointerEnter(PointerEventData eventData)
-            {
-                _background.color = HoverColor;
-                ResearchUi.PlayHover(_sidebar, transform);
-            }
-
-            public void OnPointerExit(PointerEventData eventData)
-            {
-                _background.color = Color.clear;
-            }
-
-            public void OnPointerClick(PointerEventData eventData)
-            {
-                if (eventData.button != PointerEventData.InputButton.Left || _experiments == null) return;
-
-                ResearchUi.PlayPress(_sidebar, transform);
-                bool open = !_experiments.gameObject.activeSelf;
-                if (open) _sidebar._expanded.Add(_key);
-                else _sidebar._expanded.Remove(_key);
-                SetOpen(open);
-            }
-
-            private void SetOpen(bool open)
-            {
-                if (_experiments != null) _experiments.gameObject.SetActive(open);
-                if (_experiments != null) _arrow.localRotation = Quaternion.Euler(0f, 0f, open ? -90f : 0f);
-            }
-        }
     }
 }

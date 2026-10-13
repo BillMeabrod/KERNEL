@@ -33,7 +33,7 @@ namespace KERNEL.UI
         private const float RowGap = 44f;
         private const float LabelHeight = 28f;
         private const float LabelGap = 6f;
-        // The selection ring: dashed like the tech tree's selection outline, a little outside the body
+        // The selection ring: dashed like the tech tree's selection outline, a little outside the body and its rings
         private const float RingPadding = 7f;
         private const float RingStroke = 2f;
         private const float RingDash = 10f;
@@ -102,7 +102,7 @@ namespace KERNEL.UI
         private string _selected;
         // The star (or other top-level body) whose system is shown
         private string _system;
-        private static readonly Dictionary<int, Sprite> DashedRings = new();
+        private static readonly Dictionary<(int, int), Sprite> DashedRings = new();
         private static Sprite _disc, _fadeLeft, _fadeRight, _chevronLeft, _chevronRight;
 
         /// <summary>
@@ -114,6 +114,13 @@ namespace KERNEL.UI
         /// The selected body; the home planet until the player picks another.
         /// </summary>
         public BodyEntry SelectedBody { get; private set; }
+
+        // What the current layout was built from (see Shape)
+        private string _laidOutShape;
+
+        // The sidebar's font, found once it's there
+        private TMP_FontAsset _font;
+        private Material _fontMaterial;
 
         private void Awake()
         {
@@ -302,10 +309,48 @@ namespace KERNEL.UI
             return edge;
         }
 
+        // The ledger is rebuilt whenever the screen opens and after every scored report, but the map only changes
+        // when the bodies themselves do; otherwise the laid-out nodes just take the fresh entries
         private void Build(IEnumerable<BodyEntry> roots)
         {
             _roots = roots?.ToList() ?? new List<BodyEntry>();
+            string shape = Shape(_roots);
+            if (shape == _laidOutShape && _nodes.Count > 0)
+            {
+                Rebind();
+                return;
+            }
+
+            _laidOutShape = shape;
             Layout();
+        }
+
+        // Everything the layout depends on: which bodies there are, how they nest and order, their names and sizes
+        private static string Shape(IEnumerable<BodyEntry> bodies)
+        {
+            var shape = new System.Text.StringBuilder();
+            foreach (BodyEntry body in bodies)
+            {
+                shape.Append(body.BodyName).Append('|').Append(body.DisplayName).Append('|').Append(body.IsStar)
+                    .Append('|').Append(body.Radius).Append('|');
+                foreach ((double inner, double outer) in body.Rings) shape.Append(inner).Append('-').Append(outer).Append(',');
+                shape.Append('(').Append(Shape(body.Children)).Append(')');
+            }
+
+            return shape.ToString();
+        }
+
+        // Points the nodes at the rebuilt entries and tells the sidebar, without laying anything out again
+        private void Rebind()
+        {
+            Dictionary<string, BodyEntry> byName = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b)))
+                .ToDictionary(b => b.BodyName);
+            foreach (BodyNode node in _nodes)
+                if (byName.TryGetValue(node.Body.BodyName, out BodyEntry fresh)) node.Rebind(fresh);
+
+            if (_selected == null || !byName.TryGetValue(_selected, out BodyEntry selected)) return;
+            SelectedBody = selected;
+            Selected?.Invoke(selected);
         }
 
         private void Layout()
@@ -463,12 +508,7 @@ namespace KERNEL.UI
             }
 
             // The sidebar's font may only have become available since the last layout
-            TextMeshProUGUI font = FontSource();
-            if (font != null)
-            {
-                _fullName.font = font.font;
-                _fullName.fontSharedMaterial = font.fontSharedMaterial;
-            }
+            ApplyFont(_fullName);
         }
 
         // A row of system names along the top; the shown one is highlighted
@@ -499,7 +539,20 @@ namespace KERNEL.UI
             Layout();
         }
 
-        private TextMeshProUGUI FontSource() => ResearchUi.FontSource(this);
+        // Gives a label the sidebar's font, looking it up only until it's been found
+        private void ApplyFont(TextMeshProUGUI label)
+        {
+            if (_font == null)
+            {
+                TextMeshProUGUI source = ResearchUi.FontSource(this);
+                if (source == null) return;
+                _font = source.font;
+                _fontMaterial = source.fontSharedMaterial;
+            }
+
+            label.font = _font;
+            label.fontSharedMaterial = _fontMaterial;
+        }
 
         private void PlayHoverSound(Transform at) => ResearchUi.PlayHover(this, at);
 
@@ -526,9 +579,10 @@ namespace KERNEL.UI
             root.sizeDelta = new Vector2(size, size);
             root.anchoredPosition = centre;
 
-            float ringSize = size + RingPadding * 2f;
+            // A circle around a body; around a ringed one, an ellipse taking in its rings too
+            var ringSize = new Vector2(size * BodyArt.RingReach(body), HalfHeight(body, size) * 2f) + Vector2.one * (RingPadding * 2f);
             Image ring = NewImage("Ring", root, DashedRing(ringSize), Color.clear);
-            ((RectTransform)ring.transform).sizeDelta = new Vector2(ringSize, ringSize);
+            ((RectTransform)ring.transform).sizeDelta = ringSize;
             ring.raycastTarget = false;
 
             // The rings' back half is drawn behind the body and their front half over it
@@ -588,13 +642,7 @@ namespace KERNEL.UI
             label.overflowMode = TextOverflowModes.Ellipsis;
             label.color = LabelColor;
             label.raycastTarget = false;
-            TextMeshProUGUI font = FontSource();
-            if (font != null)
-            {
-                label.font = font.font;
-                label.fontSharedMaterial = font.fontSharedMaterial;
-            }
-
+            ApplyFont(label);
             label.fontSize = fontSize;
             return label;
         }
@@ -694,36 +742,57 @@ namespace KERNEL.UI
 
         private static Sprite Disc => _disc ??= CircleSprite(0f);
 
-        // One per ring size, so every ring has the same dash length and an even number of dashes all round
-        private static Sprite DashedRing(float diameter)
+        // A dashed ellipse (a circle when both sides match), one per size, so every ring has the same dash length
+        // and a whole number of dashes all round
+        private static Sprite DashedRing(Vector2 outline)
         {
-            int key = Mathf.RoundToInt(diameter);
+            (int, int) key = (Mathf.RoundToInt(outline.x), Mathf.RoundToInt(outline.y));
             if (DashedRings.TryGetValue(key, out Sprite cached)) return cached;
 
             // Drawn at twice the canvas size for smooth edges
             const float scale = 2f;
-            int size = Mathf.CeilToInt(key * scale);
-            float centre = size / 2f;
+            int width = Mathf.CeilToInt(key.Item1 * scale), height = Mathf.CeilToInt(key.Item2 * scale);
+            var centre = new Vector2(width / 2f, height / 2f);
             float stroke = RingStroke * scale;
-            float radius = centre - stroke / 2f - 1f;
-            float circumference = 2f * Mathf.PI * radius;
-            int dashes = Mathf.Max(4, Mathf.RoundToInt(circumference / ((RingDash + RingGap) * scale)));
-            float period = circumference / dashes;
-            float dash = period * RingDash / (RingDash + RingGap);
+            float a = centre.x - stroke / 2f - 1f, b = centre.y - stroke / 2f - 1f;
 
-            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
+            // Distance along the outline at each angle, for spacing the dashes evenly around an ellipse
+            const int steps = 720;
+            var along = new float[steps + 1];
+            for (int i = 1; i <= steps; i++)
             {
-                var offset = new Vector2(x + 0.5f - centre, y + 0.5f - centre);
-                float across = Mathf.Clamp01(stroke / 2f + 0.5f - Mathf.Abs(offset.magnitude - radius));
-                float along = (Mathf.Atan2(offset.y, offset.x) + Mathf.PI) * radius % period;
-                float inDash = Mathf.Clamp01(Mathf.Min(along + 0.5f, dash - along + 0.5f));
-                texture.SetPixel(x, y, new Color(1f, 1f, 1f, across * inDash));
+                float t0 = (i - 1) * 2f * Mathf.PI / steps, t1 = i * 2f * Mathf.PI / steps;
+                along[i] = along[i - 1] + Vector2.Distance(new Vector2(a * Mathf.Cos(t0), b * Mathf.Sin(t0)), new Vector2(a * Mathf.Cos(t1), b * Mathf.Sin(t1)));
             }
 
+            float perimeter = along[steps];
+            int dashes = Mathf.Max(4, Mathf.RoundToInt(perimeter / ((RingDash + RingGap) * scale)));
+            float period = perimeter / dashes;
+            float dash = period * RingDash / (RingDash + RingGap);
+
+            var pixels = new Color32[width * height];
+            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+            {
+                Vector2 offset = new Vector2(x + 0.5f, y + 0.5f) - centre;
+                // How far the pixel is from the outline, by the ellipse's slope there
+                float q = Mathf.Sqrt(offset.x * offset.x / (a * a) + offset.y * offset.y / (b * b));
+                if (q <= 0f) continue;
+                var slope = new Vector2(offset.x / (a * a), offset.y / (b * b)) / q;
+                float across = Mathf.Clamp01(stroke / 2f + 0.5f - Mathf.Abs(q - 1f) / slope.magnitude);
+                if (across <= 0f) continue;
+
+                float t = Mathf.Repeat(Mathf.Atan2(offset.y / b, offset.x / a), 2f * Mathf.PI) / (2f * Mathf.PI) * steps;
+                int i0 = Mathf.Min(steps - 1, (int)t);
+                float position = Mathf.Lerp(along[i0], along[i0 + 1], t - i0) % period;
+                float inDash = Mathf.Clamp01(Mathf.Min(position + 0.5f, dash - position + 0.5f));
+                pixels[y * width + x] = new Color(1f, 1f, 1f, across * inDash);
+            }
+
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            texture.SetPixels32(pixels);
             texture.Apply();
-            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f * scale);
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f), 100f * scale);
             DashedRings[key] = sprite;
             return sprite;
         }
@@ -876,6 +945,8 @@ namespace KERNEL.UI
                 Refresh();
             }
 
+            public void Rebind(BodyEntry body) => Body = body;
+
             public void OnPointerEnter(PointerEventData eventData)
             {
                 _hovered = true;
@@ -899,7 +970,12 @@ namespace KERNEL.UI
 
             private void Refresh()
             {
-                if (_ring != null) _ring.color = _selected ? SelectedRing : Color.clear;
+                // Off rather than clear when not selected, so unselected rings cost nothing to draw
+                if (_ring != null)
+                {
+                    _ring.color = SelectedRing;
+                    _ring.enabled = _selected;
+                }
                 if (_body != null)
                 {
                     Color colour = _hovered ? Color.Lerp(_bodyColour, Color.white, HoverBrighten) : _bodyColour;

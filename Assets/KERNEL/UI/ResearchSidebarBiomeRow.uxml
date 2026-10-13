@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- One biome (or orbit, or the atmosphere) in K.E.R.N.E.L's R&D sidebar; data source: BiomeRowViewModel -->
+    <ui:VisualElement class="kernel-biome">
+        <ui:Button name="header" class="kernel-biome__header">
+            <ui:VisualElement name="arrow" class="kernel-biome__arrow" />
+            <ui:Label class="kernel-biome__name">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="Name" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label name="tally" class="kernel-biome__tally">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="Tally" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
+        </ui:Button>
+        <ui:VisualElement name="experiments" class="kernel-biome__experiments" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,240 @@
+/* K.E.R.N.E.L's R&D sidebar, matching the stock R&D sidebar it covers: its frame, colours and text sizes */
+
+.kernel-sidebar {
+    position: absolute;
+    background-color: rgb(15, 16, 20);
+    border-width: 2px;
+    border-color: rgb(36, 38, 47);
+    border-radius: 6px;
+    padding: 18px 22px 20px 22px;
+}
+
+.kernel-sidebar__divider {
+    height: 4px;
+    margin: 6px 0;
+    flex-shrink: 0;
+    border-bottom-width: 1px;
+    border-color: rgba(171, 179, 204, 0.2);
+}
+
+.kernel-sidebar__title {
+    font-size: 30px;
+    color: rgb(255, 255, 255);
+    margin: 4px 0 10px 0;
+    -unity-text-align: middle-left;
+}
+
+.kernel-sidebar__stats {
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.kernel-sidebar__stat {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: 20px;
+}
+
+.kernel-sidebar__label {
+    font-size: 13px;
+    color: rgb(186, 180, 168);
+    white-space: normal;
+}
+
+.kernel-sidebar__value {
+    font-size: 20px;
+    color: rgb(255, 255, 255);
+    margin-top: 2px;
+}
+
+.kernel-sidebar__value--science {
+    color: rgb(95, 191, 228);
+}
+
+.kernel-sidebar__columns {
+    flex-direction: row;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 4px 12px 4px 8px;
+}
+
+.kernel-sidebar__list {
+    flex-grow: 1;
+    margin-top: 4px;
+}
+
+/* Biome rows */
+
+.kernel-biome__header {
+    flex-direction: row;
+    align-items: center;
+    min-height: 34px;
+    margin: 0;
+    padding: 6px 12px 6px 8px;
+    border-width: 0;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.kernel-biome__header:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.kernel-biome__arrow {
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    flex-shrink: 0;
+    background-image: url("Icons/arrow.png");
+    -unity-background-image-tint-color: rgb(220, 193, 129);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.kernel-biome--open .kernel-biome__arrow {
+    rotate: 90deg;
+}
+
+.kernel-biome__name {
+    flex-grow: 1;
+    font-size: 16px;
+    color: rgb(214, 214, 217);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-text-align: middle-left;
+}
+
+.kernel-biome__tally,
+.kernel-experiment__tally {
+    font-size: 13px;
+    color: rgb(171, 179, 204);
+    -unity-text-align: middle-right;
+}
+
+.kernel-biome__tally.kernel--complete,
+.kernel-experiment__tally.kernel--complete {
+    color: rgb(99, 214, 143);
+}
+
+/* Not visited yet: a dash instead of the arrow, and nothing to open */
+.kernel-biome--unknown .kernel-biome__arrow {
+    background-image: none;
+    width: 8px;
+    height: 2px;
+    margin-left: 2px;
+    margin-right: 10px;
+    background-color: rgb(109, 115, 135);
+}
+
+.kernel-biome--unknown .kernel-biome__name {
+    color: rgb(109, 115, 135);
+}
+
+.kernel-biome__experiments {
+    display: none;
+    margin-bottom: 4px;
+}
+
+.kernel-biome--open .kernel-biome__experiments {
+    display: flex;
+}
+
+/* Experiment rows */
+
+.kernel-experiment {
+    flex-direction: row;
+    align-items: center;
+    min-height: 24px;
+    margin: 0;
+    padding: 2px 12px 2px 30px;
+    border-width: 0;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.kernel-experiment:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.kernel-experiment--selected,
+.kernel-experiment--selected:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.kernel-experiment--selected .kernel-experiment__name {
+    color: rgb(255, 255, 255);
+}
+
+.kernel-experiment__name {
+    flex-grow: 1;
+    font-size: 14px;
+    color: rgb(171, 179, 204);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kernel-experiment__situation {
+    font-size: 12px;
+    color: rgb(231, 202, 118);
+    margin-right: 6px;
+}
+
+/* Field report: the hovered or selected experiment's text, at the bottom where Paige sits in the stock sidebar */
+
+/* A fixed height, whatever it shows; a long report scrolls within it */
+.kernel-report {
+    flex-shrink: 0;
+    height: 190px;
+    padding: 2px 8px 0 8px;
+}
+
+.kernel-report__scroll {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;
+}
+
+.kernel-report__title {
+    flex-direction: row;
+    align-items: flex-end;
+    margin-top: 6px;
+}
+
+.kernel-report__experiment {
+    font-size: 15px;
+    color: rgb(255, 255, 255);
+}
+
+.kernel-report__place {
+    font-size: 13px;
+    color: rgb(231, 202, 118);
+    margin-left: 6px;
+}
+
+.kernel-report__partial {
+    display: none;
+    font-size: 12px;
+    color: rgb(231, 202, 118);
+    white-space: normal;
+    margin-top: 6px;
+}
+
+.kernel-report--partial .kernel-report__partial {
+    display: flex;
+}
+
+.kernel-report__text {
+    font-size: 14px;
+    color: rgb(171, 179, 204);
+    white-space: normal;
+    margin-top: 6px;
+}
+
+/* Nothing to read: the title goes and the hint (or "no report yet") is dimmed */
+.kernel-report--empty .kernel-report__text {
+    color: rgb(109, 115, 135);
+    -unity-font-style: italic;
+}
+
+.kernel-report--no-title .kernel-report__title {
+    display: none;
+}
