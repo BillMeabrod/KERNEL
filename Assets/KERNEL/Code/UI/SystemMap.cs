@@ -2,10 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using KERNEL.Ledger;
-using KSP.Audio;
-using KSP.Game;
-using KSP.Game.Science;
-using KSP.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -46,6 +42,12 @@ namespace KERNEL.UI
         // How far right moons of moons sit from the moon they orbit
         private const float SubIndent = 56f;
         private const float PickerHeight = 44f;
+        // The page title (the full name) along the top, above the system picker
+        private const float TitleHeight = 44f;
+        private const float TitleGap = 16f;
+        private const float FullNameFontSize = 26f;
+        // Selected when the page first opens
+        private const string HomeBody = "Kerbin";
         private const float PickerGap = 28f;
         private const float PickerFontSize = 20f;
         // Edge arrows shown when part of the system is off the page
@@ -71,18 +73,12 @@ namespace KERNEL.UI
         private static readonly Color ChevronColor = new(0.85f, 0.88f, 0.95f, 0.7f);
         private static readonly Color ChevronHoverColor = new(1f, 1f, 1f, 1f);
 
-        // Labels use the font of the R&D sidebar's title. Redux swaps that sidebar in when the screen starts, so
-        // it isn't in the prefab for the patch to reference
-        private const string FontSourcePath = "Container/TechNodeInfo/Content/TechNodeName";
-
-        // Bodies sound like the tier tabs, whose sounds are set on their visualizers
-        private const string TierTabsPath = "Container/TechTree/TierScroll/TierSelectionContainer";
-
         // Set by the prefab patch
         [SerializeField] private RectTransform _treeContent;
 
         private RectTransform _content;
         private RectTransform _picker;
+        private TextMeshProUGUI _fullName;
         private EdgeHint _leftHint, _rightHint;
 
         // Sliding to a page after an arrow click
@@ -106,12 +102,16 @@ namespace KERNEL.UI
         private string _system;
         private static readonly Dictionary<int, Sprite> DashedRings = new();
         private static Sprite _disc, _fadeLeft, _fadeRight, _chevronLeft, _chevronRight;
-        private string[] _hoverSounds, _pressSounds;
 
         /// <summary>
-        /// Raised when the player selects a body.
+        /// Raised when the selected body changes, including when a ledger rebuild replaces its entry.
         /// </summary>
         public event Action<BodyEntry> Selected;
+
+        /// <summary>
+        /// The selected body; the home planet until the player picks another.
+        /// </summary>
+        public BodyEntry SelectedBody { get; private set; }
 
         private void Awake()
         {
@@ -127,7 +127,21 @@ namespace KERNEL.UI
             _picker = NewRect("Systems", transform);
             _picker.anchorMin = _picker.anchorMax = new Vector2(0f, 1f);
             _picker.pivot = new Vector2(0f, 1f);
-            _picker.anchoredPosition = new Vector2(Margin, -Margin / 2f);
+            _picker.anchoredPosition = new Vector2(Margin, -(Margin / 2f + TitleHeight));
+
+            // The page's title, the full name (the tab already says K.E.R.N.E.L). Stays put while the map pans
+            RectTransform title = NewRect("Title", transform);
+            title.anchorMin = title.anchorMax = new Vector2(0f, 1f);
+            title.pivot = new Vector2(0f, 1f);
+            title.anchoredPosition = new Vector2(Margin, -Margin / 2f);
+            title.sizeDelta = new Vector2(0f, TitleHeight);
+            var titleRow = title.gameObject.AddComponent<HorizontalLayoutGroup>();
+            titleRow.spacing = TitleGap;
+            titleRow.childAlignment = TextAnchor.LowerLeft;
+            titleRow.childControlWidth = titleRow.childControlHeight = true;
+            titleRow.childForceExpandWidth = titleRow.childForceExpandHeight = false;
+            var titleFit = title.gameObject.AddComponent<ContentSizeFitter>();
+            titleFit.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             _leftHint = AddEdgeHint(left: true);
             _rightHint = AddEdgeHint(left: false);
@@ -317,11 +331,12 @@ namespace KERNEL.UI
 
             BodyEntry anchor = systems.FirstOrDefault(b => b.BodyName == _system) ?? systems[0];
             _system = anchor.BodyName;
-            float top = 0f;
+            BuildTitle();
+            float top = TitleHeight;
             if (systems.Count > 1)
             {
                 BuildPicker(systems, anchor);
-                top = PickerHeight;
+                top += PickerHeight;
             }
 
             double largest = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b)))
@@ -340,27 +355,24 @@ namespace KERNEL.UI
             float ColumnWidth(BodyEntry body, int depth) =>
                 Orbiting(body).Select(child => ColumnWidth(child, depth + 1)).Append(SizeOf(body) + 2f * SubIndent * depth).Max();
 
-            // Stacks a body's moons downward from y at x, then their moons further right below each; returns
-            // the centre of the last one stacked directly under it
-            float StackMoons(Transform column, BodyEntry parent, float x, ref float y)
+            // Stacks a body's moons downward from y at x, then their moons further right below each. The line
+            // down to each runs from just below the name above it, so it never crosses a name
+            void StackMoons(Transform column, BodyEntry parent, float x, float lineFrom, ref float y)
             {
-                float last = 0f;
                 foreach (BodyEntry moon in Orbiting(parent))
                 {
                     float size = SizeOf(moon);
                     float centre = y - size / 2f;
+                    AddLine(column, new Vector2(x, lineFrom), new Vector2(x, centre));
                     AddBody(column, moon, new Vector2(x, centre), size);
-                    last = centre;
+                    lineFrom = centre - size / 2f - LabelGap - LabelHeight;
                     y -= size + LabelGap + LabelHeight + RowGap;
 
                     if (!Orbiting(moon).Any()) continue;
                     float subX = x + SubIndent;
-                    float lastSub = StackMoons(column, moon, subX, ref y);
                     AddLine(column, new Vector2(x, centre), new Vector2(subX, centre));
-                    AddLine(column, new Vector2(subX, centre), new Vector2(subX, lastSub));
+                    StackMoons(column, moon, subX, centre, ref y);
                 }
-
-                return last;
             }
 
             List<BodyEntry> planets = Orbiting(anchor).ToList();
@@ -393,8 +405,7 @@ namespace KERNEL.UI
                 float my = _rowCentre - planetSize / 2f - LabelGap - LabelHeight - RowGap;
                 if (Orbiting(planet).Any())
                 {
-                    float lastMoon = StackMoons(root, planet, cx, ref my);
-                    AddLine(root, new Vector2(cx, _rowCentre), new Vector2(cx, lastMoon));
+                    StackMoons(root, planet, cx, _rowCentre - planetSize / 2f - LabelGap - LabelHeight, ref my);
                 }
 
                 bottom = Mathf.Min(bottom, my + RowGap);
@@ -426,8 +437,34 @@ namespace KERNEL.UI
                 hintRect.offsetMax = new Vector2(hintRect.offsetMax.x, -top);
             }
 
-            BodyNode selected = _nodes.FirstOrDefault(n => n.Body.BodyName == _selected);
-            foreach (BodyNode node in _nodes) node.SetSelected(node == selected);
+            // Keep the selection across rebuilds and system changes; start on the home planet
+            List<BodyEntry> all = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b))).ToList();
+            BodyEntry body = all.FirstOrDefault(b => b.BodyName == _selected)
+                             ?? all.FirstOrDefault(b => b.BodyName == HomeBody)
+                             ?? Orbiting(anchor).FirstOrDefault() ?? anchor;
+            _selected = body.BodyName;
+            SelectedBody = body;
+            foreach (BodyNode node in _nodes) node.SetSelected(node.Body.BodyName == _selected);
+            Selected?.Invoke(body);
+        }
+
+        private void BuildTitle()
+        {
+            Transform title = transform.Find("Title");
+            if (_fullName == null)
+            {
+                _fullName = NewLabel("Full Name", title, Localization.Translate(Localization.FullTitle), FullNameFontSize);
+                _fullName.color = Color.white;
+                _fullName.overflowMode = TextOverflowModes.Overflow;
+            }
+
+            // The sidebar's font may only have become available since the last layout
+            TextMeshProUGUI font = FontSource();
+            if (font != null)
+            {
+                _fullName.font = font.font;
+                _fullName.fontSharedMaterial = font.fontSharedMaterial;
+            }
         }
 
         // A row of system names along the top; the shown one is highlighted
@@ -458,39 +495,11 @@ namespace KERNEL.UI
             Layout();
         }
 
-        private TextMeshProUGUI FontSource()
-        {
-            Transform source = Screen != null ? Screen.transform.Find(FontSourcePath) : null;
-            return source != null ? source.GetComponent<TextMeshProUGUI>() : null;
-        }
+        private TextMeshProUGUI FontSource() => ResearchUi.FontSource(this);
 
-        private RDCenterUIController Screen => GetComponentInParent<RDCenterUIController>(true);
+        private void PlayHoverSound(Transform at) => ResearchUi.PlayHover(this, at);
 
-        private void PlayHoverSound(Transform at) => PlaySounds(_hoverSounds ??= TierTabSounds(hover: true), at);
-
-        private void PlayPressSound(Transform at) => PlaySounds(_pressSounds ??= TierTabSounds(hover: false), at);
-
-        private string[] TierTabSounds(bool hover)
-        {
-            Transform tabs = Screen != null ? Screen.transform.Find(TierTabsPath) : null;
-            var visualizer = tabs != null ? tabs.GetComponentInChildren<ToggleExtendedEventsVisualizer>(true) : null;
-            if (visualizer == null) return Array.Empty<string>();
-
-            AK.Wwise.Event[] events = hover ? visualizer.OnButtonHoverEvents
-                : visualizer.OnButtonPressedEvents is { Length: > 0 } pressed ? pressed : visualizer.OnToggleEnabledButtonPressedEvents;
-            return events?.Where(e => e != null).Select(e => e.Name).ToArray() ?? Array.Empty<string>();
-        }
-
-        // As stock UI does, with the sound placed where the body is on screen
-        private static void PlaySounds(string[] names, Transform at)
-        {
-            if (names.Length == 0 || GameManager.Instance == null || GameManager.Instance.Game == null) return;
-
-            Vector2 position = GameManager.Instance.Game.UI.GetViewportPositionFromUITransformInOverlayCanvas(at);
-            KSPBaseAudio.SetRTPCValue(KSPAudioParams.ui_position_x_rtpc, position.x, KSPAudioEventManager.UIAudioGameObject);
-            KSPBaseAudio.SetRTPCValue(KSPAudioParams.ui_position_y_rtpc, position.y, KSPAudioEventManager.UIAudioGameObject);
-            foreach (string name in names) KSPBaseAudio.PostEvent(name, KSPAudioEventManager.UIAudioGameObject);
-        }
+        private void PlayPressSound(Transform at) => ResearchUi.PlayPress(this, at);
 
         private static IEnumerable<BodyEntry> Descendants(BodyEntry body) =>
             body.Children.SelectMany(child => new[] { child }.Concat(Descendants(child)));
@@ -567,6 +576,7 @@ namespace KERNEL.UI
         private void Select(BodyNode node)
         {
             _selected = node.Body.BodyName;
+            SelectedBody = node.Body;
             foreach (BodyNode other in _nodes) other.SetSelected(other == node);
             Selected?.Invoke(node.Body);
         }

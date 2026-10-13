@@ -64,20 +64,14 @@ namespace KERNEL.UI
         private VisualElement BuildBody(BodyEntry body)
         {
             // Every body is listed (the tracking station shows them anyway); its own totals exclude its moons
-            List<AreaEntry> areas = body.Areas.Where(area => VisibleLocations(area).Any()).ToList();
-            Foldout foldout = CreateFoldout(body.BodyName, body.DisplayName, areas.SelectMany(VisibleLocations), "kernel-body");
+            List<AreaEntry> areas = body.ShownAreas().ToList();
+            Foldout foldout = CreateFoldout(body.BodyName, body.DisplayName, areas.SelectMany(a => a.UnlockedLocations), "kernel-body");
             AddFoldoutIcon(foldout, body.IsStar ? RowIcon.Star : RowIcon.Planet);
 
-            // Orbiting bodies first (a star's planets, a planet's moons), then orbits (high to low), then other
-            // whole-body areas (atmosphere), then biomes.
-            // Both of the last groups sort by real name, even where the name is still hidden as "?????".
+            // Orbiting bodies first (a star's planets, a planet's moons), then the body's own areas
             foreach (BodyEntry child in body.Children.Where(HasAnyScience))
                 foldout.Add(BuildBody(child));
-            foreach (AreaEntry area in areas.Where(a => a.IsOrbit))
-                foldout.Add(BuildAreaOrUnknown(body, area));
-            foreach (AreaEntry area in areas.Where(a => a.IsWholeBody && !a.IsOrbit).OrderBy(a => a.DisplayName))
-                foldout.Add(BuildAreaOrUnknown(body, area));
-            foreach (AreaEntry area in areas.Where(a => !a.IsWholeBody).OrderBy(a => a.DisplayName))
+            foreach (AreaEntry area in areas)
                 foldout.Add(BuildAreaOrUnknown(body, area));
 
             return foldout;
@@ -85,20 +79,14 @@ namespace KERNEL.UI
 
         private VisualElement BuildAreaOrUnknown(BodyEntry body, AreaEntry area)
         {
-            return IsKnown(area) ? BuildArea(body, area) : BuildUnknownArea(area);
-        }
-
-        // Every body has orbits; anything else stays a mystery until science has been gathered there
-        private static bool IsKnown(AreaEntry area)
-        {
-            return area.IsOrbit || area.HasSubmissions;
+            return area.IsKnown ? BuildArea(body, area) : BuildUnknownArea(area);
         }
 
         // Looks and responds like the other area rows, but there's nothing to reveal yet: a "-" replaces the
         // arrow and it never opens
         private static VisualElement BuildUnknownArea(AreaEntry area)
         {
-            List<LocationEntry> locations = VisibleLocations(area).ToList();
+            List<LocationEntry> locations = area.UnlockedLocations.ToList();
             var foldout = new Foldout { text = Localization.Translate(Localization.UnknownArea), value = false };
             foldout.AddToClassList("kernel-area");
             foldout.AddToClassList("kernel-area--unknown");
@@ -119,7 +107,7 @@ namespace KERNEL.UI
 
         private VisualElement BuildArea(BodyEntry body, AreaEntry area)
         {
-            List<LocationEntry> locations = VisibleLocations(area).ToList();
+            List<LocationEntry> locations = area.UnlockedLocations.ToList();
             Foldout foldout = CreateFoldout($"{body.BodyName}/{area.Id}", area.DisplayName, locations, "kernel-area");
             AddFoldoutIcon(foldout, AreaIcon(area));
 
@@ -201,10 +189,5 @@ namespace KERNEL.UI
             return label;
         }
 
-        // Only experiments the player can run with their current tech
-        private static IEnumerable<LocationEntry> VisibleLocations(AreaEntry area)
-        {
-            return area.Locations.Where(location => location.IsUnlocked);
-        }
     }
 }

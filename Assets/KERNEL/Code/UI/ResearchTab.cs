@@ -49,6 +49,7 @@ namespace KERNEL.UI
 
         private ToggleExtended _tab;
         private ToggleExtended _lastTier;
+        private ResearchSidebar _sidebar;
         private RectTransform _starfieldRect;
         private RDInputDefinition _input;
         private int _tiers;
@@ -163,6 +164,10 @@ namespace KERNEL.UI
 
             if (GameManager.Instance.Game.InputManager.TryGetInputDefinition(out _input))
                 _input.BindAction<float>(GameManager.Instance.Game.Input.RD.ScrollTechTree.name, OnScrollInput);
+
+            // The sidebar shows the body picked on the map while our page shows
+            var map = _treeContent.parent.GetComponentInChildren<SystemMap>(true);
+            if (_controller != null) _sidebar = ResearchSidebar.Attach(_controller, map);
         }
 
         private void OnDestroy()
@@ -171,6 +176,10 @@ namespace KERNEL.UI
         }
 
         private void OnScrollInput(float input) => _scrollInput = input * _scrollSpeed;
+
+        // Scrolling the sidebar's biome list shouldn't also scroll the page
+        private bool IsPointerOverSidebarList() =>
+            _sidebar != null && UnityEngine.InputSystem.Mouse.current is { } mouse && _sidebar.IsPointerOverList(mouse.position.ReadValue());
 
         private void AnimateTo(float page)
         {
@@ -261,7 +270,7 @@ namespace KERNEL.UI
                 if (_animToPage > 0f) _scrollbar.value = Mathf.Lerp(_animFromScroll, 1f, t);
                 if (t >= 1f) _animating = false;
             }
-            else if (_grab == null && _scrollInput != 0f)
+            else if (_grab == null && _scrollInput != 0f && !IsPointerOverSidebarList())
             {
                 // Past the last tier, scroll input moves through our page at the stock speed (in tiers per second)
                 if (_page > 0f || (_scrollInput > 0f && _scrollbar.value >= 0.999f))
@@ -278,6 +287,8 @@ namespace KERNEL.UI
                 if (_page >= 0.5f && !_tab.isOn) _tab.SetIsOnWithoutNotify(true);
                 else if (_page < 0.5f && _tab.isOn && _lastTier != null) _lastTier.SetIsOnWithoutNotify(true);
             }
+
+            if (_sidebar != null) _sidebar.SetShown(_tab.isOn);
 
             // Carry everything left until the end of the tier backgrounds, and of the tree, leaves the screen
             _backgroundSlide.Apply(_background, x => _page * BackgroundEndX(x));

@@ -59,6 +59,12 @@ namespace KERNEL.Ledger
         public List<LocationEntry> Locations = new();
 
         public bool HasSubmissions => Locations.Any(l => l.HasSubmissions);
+
+        // Only experiments the player can run with their current tech are shown or counted
+        public IEnumerable<LocationEntry> UnlockedLocations => Locations.Where(l => l.IsUnlocked);
+
+        // Every body has orbits; anything else stays a mystery ("?????") until science has been gathered there
+        public bool IsKnown => IsOrbit || HasSubmissions;
     }
 
     public class BodyEntry
@@ -79,5 +85,17 @@ namespace KERNEL.Ledger
 
         public List<AreaEntry> Areas = new();
         public List<BodyEntry> Children = new();
+
+        /// <summary>
+        /// The areas with experiments the player can run, in display order: orbits (high to low), other whole-body
+        /// areas (atmosphere), then biomes. The last two sort by real name, even where the name is still hidden.
+        /// </summary>
+        public IEnumerable<AreaEntry> ShownAreas()
+        {
+            List<AreaEntry> areas = Areas.Where(area => area.UnlockedLocations.Any()).ToList();
+            return areas.Where(a => a.IsOrbit)
+                .Concat(areas.Where(a => a.IsWholeBody && !a.IsOrbit).OrderBy(a => a.DisplayName))
+                .Concat(areas.Where(a => !a.IsWholeBody).OrderBy(a => a.DisplayName));
+        }
     }
 }
