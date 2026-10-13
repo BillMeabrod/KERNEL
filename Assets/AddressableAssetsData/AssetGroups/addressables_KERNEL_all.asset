@@ -40,11 +40,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 50adb6440fafc8443941150c59bc9080
-    m_Address: KERNEL/icon.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 51a5256758a143a9a95947d7d460101d
     m_Address: KERNEL/Bodies/Laythe.png
     m_ReadOnly: 0

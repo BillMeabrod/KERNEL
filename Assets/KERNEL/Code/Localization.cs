@@ -10,11 +10,6 @@ namespace KERNEL
     {
         public const string Title = "KERNEL/UI/Title";
         public const string UnknownArea = "KERNEL/UI/UnknownArea";
-        public const string FullTitle = "KERNEL/UI/FullTitle";
-        public const string BiomesExplored = "KERNEL/UI/BiomesExplored";
-        public const string SciencePointsGained = "KERNEL/UI/SciencePointsGained";
-        public const string BiomeColumn = "KERNEL/UI/BiomeColumn";
-        public const string ScienceGainedColumn = "KERNEL/UI/ScienceGainedColumn";
         public const string FieldReportHint = "KERNEL/UI/FieldReportHint";
         public const string NoFieldReport = "KERNEL/UI/NoFieldReport";
         public const string Indecipherable = "KERNEL/UI/Indecipherable";
