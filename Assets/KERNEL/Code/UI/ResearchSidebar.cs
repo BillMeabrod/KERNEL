@@ -50,11 +50,8 @@ namespace KERNEL.UI
         private readonly ResearchSidebarViewModel _model = new();
         private Rect _placedAt;
 
-        // The stock sidebar we're laid over, and how to map it to the screen; found once (and again if it's
-        // replaced), with one corners array reused, since placing runs every frame
-        private RectTransform _stock;
-        private Camera _stockCamera;
-        private readonly Vector3[] _corners = new Vector3[4];
+        // The stock sidebar we're laid over; found once Redux has swapped it in
+        private readonly UguiRect _stock = new();
 
         // Which biomes are open, by body and area, kept across refreshes
         private readonly HashSet<string> _open = new();
@@ -186,37 +183,21 @@ namespace KERNEL.UI
         // Matches the stock sidebar's place and size on screen, whatever the resolution and UI scale
         private void PlaceOverStockSidebar()
         {
-            if (_panel.panel == null || !FindStockSidebar()) return;
-
-            _stock.GetWorldCorners(_corners);
-            Vector2 min = ToPanel(RectTransformUtility.WorldToScreenPoint(_stockCamera, _corners[1]));
-            Vector2 max = ToPanel(RectTransformUtility.WorldToScreenPoint(_stockCamera, _corners[3]));
-            var rect = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
-            if (rect == _placedAt) return;
+            if (!FindStockSidebar() || !_stock.TryGetPanelRect(_panel.panel, out Rect rect) || rect == _placedAt) return;
 
             _placedAt = rect;
-            _panel.style.left = rect.x;
-            _panel.style.top = rect.y;
-            _panel.style.width = rect.width;
-            _panel.style.height = rect.height;
+            UguiRect.Place(_panel, rect);
         }
 
         // Redux swaps its own sidebar in when the screen starts, so this is looked up until it's there
         private bool FindStockSidebar()
         {
-            if (_stock != null) return true;
+            if (_stock.Target != null) return true;
             if (!(_screen.transform.Find(StockSidebarPath) is RectTransform stock)) return false;
 
-            _stock = stock;
-            Canvas canvas = stock.GetComponentInParent<Canvas>();
-            canvas = canvas != null ? canvas.rootCanvas : null;
-            _stockCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+            _stock.Target = stock;
             return true;
         }
-
-        // Screen points run bottom up; panel points top down
-        private Vector2 ToPanel(Vector2 screenPoint) =>
-            RuntimePanelUtils.ScreenToPanel(_panel.panel, new Vector2(screenPoint.x, Screen.height - screenPoint.y));
 
         private void Refresh()
         {

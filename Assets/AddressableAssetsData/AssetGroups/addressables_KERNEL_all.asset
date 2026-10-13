@@ -100,6 +100,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: afe2cb6f2ebc12c40a05a1470d3a9fd8
+    m_Address: KERNEL/SystemMap.uxml
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bee2798213fca734cb0b798694086185
     m_Address: KERNEL/starfield.png
     m_ReadOnly: 0

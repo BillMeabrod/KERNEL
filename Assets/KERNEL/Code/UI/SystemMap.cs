@@ -2,23 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using KERNEL.Ledger;
-using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace KERNEL.UI
 {
     /// <summary>
-    /// The system map on K.E.R.N.E.L's R&D page: a star on the left with its planets in a row to the right,
-    /// innermost first, each planet's moons stacked below it, and moons of moons stacked below those. With more
-    /// than one star, a row of system names picks which one is shown; a star orbiting another star is a system
-    /// of its own. Bodies can be clicked to select them. A prefab
-    /// patch adds this inside the tech tree's view, and it keeps itself just past the end of the tree, so it
-    /// slides in with ResearchTab and is clipped like the tree.
+    /// The K.E.R.N.E.L page's map of the solar system, after the last tech tier: the star on the left, its planets
+    /// in a row along one orbit line, and each planet's moons (and theirs) hanging below it. Bodies are drawn as
+    /// pixel art (see <see cref="BodyArt"/>) at sizes that follow their radius. Clicking one selects it for the
+    /// sidebar. With more than one star, a picker along the top switches system; a system wider than the page is
+    /// shrunk a little to fit, or split into pages of whole planet columns with arrows at the edges.
+    ///
+    /// Drawn in UI Toolkit, the Redux way: a <see cref="SystemMapPanel"/> window laid over the tech tree's view,
+    /// with buttons that take UitkForKsp2's UI sounds. The component itself sits on an empty rect the prefab patch
+    /// adds to the tree's view, which it keeps just after the end of the tree as the tree scrolls and slides; the
+    /// window's page follows that rect.
     /// </summary>
-    // After ResearchTab has slid the tree for the frame
-    [DefaultExecutionOrder(100)]
     public class SystemMap : MonoBehaviour
     {
         // Layout, in canvas units
@@ -33,7 +33,8 @@ namespace KERNEL.UI
         private const float RowGap = 44f;
         private const float LabelHeight = 28f;
         private const float LabelGap = 6f;
-        // The selection ring: dashed like the tech tree's selection outline, a little outside the body and its rings
+        // The selection outline: dashed like the tech tree's selection outline, a little outside the body and its
+        // rings
         private const float RingPadding = 7f;
         private const float RingStroke = 2f;
         private const float RingDash = 10f;
@@ -41,19 +42,11 @@ namespace KERNEL.UI
         private const float LineWidth = 2f;
         // How far right moons of moons sit from the moon they orbit
         private const float SubIndent = 56f;
-        private const float PickerHeight = 44f;
-        // The page title (the full name) along the top, above the system picker
+        // The page title (the full name) and, with more than one star, the system picker take this much of the top
         private const float TitleHeight = 44f;
-        private const float TitleGap = 16f;
-        private const float FullNameFontSize = 26f;
+        private const float PickerHeight = 44f;
         // Selected when the page first opens
         private const string HomeBody = "Kerbin";
-        private const float PickerGap = 28f;
-        private const float PickerFontSize = 20f;
-        // Edge arrows shown when part of the system is off the page
-        private const float HintWidth = 96f;
-        private const float ChevronSize = 40f;
-        private const float HintFadeTime = 0.2f;
         // An arrow click slides to the next page of whole planet columns, over the stock tier scroll's time
         private const float PageTime = 0.25f;
         // A system a little too big for the page is shrunk to fit on it, down to this. One that wouldn't fit even
@@ -63,25 +56,16 @@ namespace KERNEL.UI
         private const float LineOverrun = 40f;
 
         private static readonly Color StarColor = new(1f, 0.84f, 0.47f);
-        private static readonly Color LineColor = new(1f, 1f, 1f, 0.18f);
-        private static readonly Color LabelColor = new(0.85f, 0.88f, 0.95f);
+        // The deep sky of the starfield, so an edge arrow's fade reads as the edge of the page
+        private static readonly Color HintFadeColor = new(0.03f, 0.035f, 0.08f, 0.9f);
         // Art is drawn a touch below full brightness, so hovering can brighten it
         private static readonly Color ArtTint = new(0.86f, 0.86f, 0.86f, 1f);
-        private static readonly Color PickerColor = new(0.6f, 0.64f, 0.72f);
-        private static readonly Color PickerHoverColor = new(0.85f, 0.88f, 0.95f);
-        private static readonly Color PickerSelectedColor = new(1f, 0.84f, 0.47f);
-        // The deep sky of the starfield, so the fade reads as the edge of the page
-        private static readonly Color HintFadeColor = new(0.03f, 0.035f, 0.08f, 0.9f);
-        private static readonly Color ChevronColor = new(0.85f, 0.88f, 0.95f, 0.7f);
-        private static readonly Color ChevronHoverColor = new(1f, 1f, 1f, 1f);
 
         // Set by the prefab patch
         [SerializeField] private RectTransform _treeContent;
 
-        private RectTransform _content;
-        private RectTransform _picker;
-        private TextMeshProUGUI _fullName;
-        private EdgeHint _leftHint, _rightHint;
+        private SystemMapPanel _panel;
+        private VisualElement _content, _picker, _leftHint, _rightHint, _lineToPrevious, _lineToNext;
 
         // Sliding to a page after an arrow click
         private bool _paging;
@@ -89,14 +73,13 @@ namespace KERNEL.UI
         private readonly List<BodyNode> _nodes = new();
         // The star's and each planet's column, left to right, each holding its bodies and its stretch of the orbit
         // line; pages break between them so none is cut in half, and a page shows only its own
-        private readonly List<(RectTransform Root, float Left, float Right)> _columns = new();
+        private readonly List<(VisualElement Root, float Left, float Right)> _columns = new();
         private float _rowCentre;
-        // Orbit line running off the page edge where more planets follow on another page
-        private Image _lineToPrevious, _lineToNext;
         private float _contentWidth, _contentHeight, _top;
-        // Index of the first column on each page, and which page is shown
+        // Index of the first column on each page, which page is shown, and where the content is on it
         private readonly List<int> _pageFirst = new();
         private int _page;
+        private float _contentX, _scale = 1f;
         private Vector2 _pagedSize = new(-1f, -1f);
         private List<BodyEntry> _roots = new();
         private string _selected;
@@ -118,42 +101,47 @@ namespace KERNEL.UI
         // What the current layout was built from (see Shape)
         private string _laidOutShape;
 
-        // The sidebar's font, found once it's there
-        private TMP_FontAsset _font;
-        private Material _fontMaterial;
+        // Counts layouts, so art arriving for one that's since been replaced is dropped
+        private int _layout;
+
+        // The largest non-star radius across every system, which body sizes are scaled from
+        private double _largest;
+
+        // The bodies whose art has been asked for ahead of their system being shown (see PrepareOtherSystems)
+        private string _preparedShape;
 
         private void Awake()
         {
-            // A system wider than the page is split into pages of whole planet columns, stepped through with the
-            // edge arrows; the scroll wheel stays with the tier scroll
-            var mask = gameObject.AddComponent<RectMask2D>();
-            mask.enabled = true;
-            _content = NewRect("Content", transform);
-            _content.anchorMin = _content.anchorMax = new Vector2(0f, 1f);
-            _content.pivot = new Vector2(0f, 1f);
+            _panel = SystemMapPanel.Attach((RectTransform)transform);
+            _panel.Ready += OnPanelReady;
+        }
 
-            // Only shown with more than one system; stays put while the map pans
-            _picker = NewRect("Systems", transform);
-            _picker.anchorMin = _picker.anchorMax = new Vector2(0f, 1f);
-            _picker.pivot = new Vector2(0f, 1f);
-            _picker.anchoredPosition = new Vector2(Margin, -(Margin / 2f + TitleHeight));
+        private void OnPanelReady()
+        {
+            VisualElement page = _panel.Page;
+            _content = page.Q("content");
+            _picker = page.Q("picker");
+            _leftHint = SetUpHint(page.Q("hint-left"), -1, FadeLeft, ChevronLeft);
+            _rightHint = SetUpHint(page.Q("hint-right"), 1, FadeRight, ChevronRight);
 
-            // The page's title, the full name (the tab already says K.E.R.N.E.L). Stays put while the map pans
-            RectTransform title = NewRect("Title", transform);
-            title.anchorMin = title.anchorMax = new Vector2(0f, 1f);
-            title.pivot = new Vector2(0f, 1f);
-            title.anchoredPosition = new Vector2(Margin, -Margin / 2f);
-            title.sizeDelta = new Vector2(0f, TitleHeight);
-            var titleRow = title.gameObject.AddComponent<HorizontalLayoutGroup>();
-            titleRow.spacing = TitleGap;
-            titleRow.childAlignment = TextAnchor.LowerLeft;
-            titleRow.childControlWidth = titleRow.childControlHeight = true;
-            titleRow.childForceExpandWidth = titleRow.childForceExpandHeight = false;
-            var titleFit = title.gameObject.AddComponent<ContentSizeFitter>();
-            titleFit.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            // Anything built before the window was up is drawn now
+            _laidOutShape = null;
+            Build(_roots);
+        }
 
-            _leftHint = AddEdgeHint(left: true);
-            _rightHint = AddEdgeHint(left: false);
+        private VisualElement SetUpHint(VisualElement hint, int direction, Sprite fade, Sprite chevron)
+        {
+            // Set on the element, not in the stylesheet, so the theme's button look (its height, background and
+            // tint) can't win: the arrow runs the page's full height below the header, and only its fade shows
+            hint.style.backgroundColor = Color.clear;
+            hint.style.unityBackgroundImageTintColor = HintFadeColor;
+            hint.style.backgroundImage = new StyleBackground(fade);
+            hint.style.minHeight = StyleKeyword.None;
+            hint.style.maxHeight = StyleKeyword.None;
+            hint.Q("chevron").style.backgroundImage = new StyleBackground(chevron);
+            hint.pickingMode = PickingMode.Ignore;
+            ((Button)hint).clicked += () => Page(direction);
+            return hint;
         }
 
         private void OnEnable()
@@ -181,11 +169,14 @@ namespace KERNEL.UI
             position.x = _treeContent.anchoredPosition.x + _treeContent.rect.width * (1f - _treeContent.pivot.x);
             rect.anchoredPosition = position;
 
+            // The window follows; nothing more to do while the page is out of view
+            if (_panel == null || !_panel.Place(out Vector2 pageSize) || _content == null) return;
+
             if (_paging)
             {
                 _pageTime += Time.unscaledDeltaTime;
                 float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_pageTime / PageTime));
-                _content.anchoredPosition = new Vector2(Mathf.Lerp(_pageFrom, _pageTo, t), _content.anchoredPosition.y);
+                SetContentX(Mathf.Lerp(_pageFrom, _pageTo, t));
                 if (t >= 1f)
                 {
                     _paging = false;
@@ -194,17 +185,20 @@ namespace KERNEL.UI
             }
 
             // How much fits depends on the page's size
-            if (rect.rect.size != _pagedSize)
+            if (pageSize != _pagedSize)
             {
-                FitToPage(rect.rect.size);
+                FitToPage(pageSize);
                 _paging = false;
-                _content.anchoredPosition = new Vector2(PageOffset(_page), _content.anchoredPosition.y);
+                SetContentX(PageOffset(_page));
                 ShowPageColumns();
             }
+        }
 
-            // Arrows only where the row of planets carries on past the page
-            _leftHint.SetShown(_page > 0);
-            _rightHint.SetShown(_page < _pageFirst.Count - 1);
+        private void SetContentX(float x)
+        {
+            if (Mathf.Approximately(x, _contentX)) return;
+            _contentX = x;
+            _content.style.left = x;
         }
 
         // Shrinks the map onto one page if that's enough, and otherwise splits it into pages of whole columns
@@ -215,9 +209,13 @@ namespace KERNEL.UI
             _pageFirst.Add(0);
             if (_columns.Count == 0 || page.x <= 0f) return;
 
+            // The arrows run from below the header to the foot of the page
+            foreach (VisualElement hint in new[] { _leftHint, _rightHint }) hint.style.height = Mathf.Max(0f, page.y - _top);
+
             float scale = Mathf.Min(1f, page.x / _contentWidth, (page.y - _top) / _contentHeight);
             if (scale < MinFitScale) scale = 1f;
-            _content.localScale = new Vector3(scale, scale, 1f);
+            _scale = scale;
+            _content.style.scale = new Scale(new Vector3(scale, scale, 1f));
 
             // In the map's own (unscaled) units: each page starts a margin before its first column
             float width = page.x / scale;
@@ -233,41 +231,46 @@ namespace KERNEL.UI
         private float PageStart(int firstColumn) => firstColumn == 0 ? 0f : _columns[firstColumn].Left - Margin;
 
         // Where the map sits to show a page
-        private float PageOffset(int page) => -PageStart(_pageFirst[page]) * _content.localScale.x;
+        private float PageOffset(int page) => -PageStart(_pageFirst[page]) * _scale;
 
         private int PageEnd(int page) => page + 1 < _pageFirst.Count ? _pageFirst[page + 1] : _columns.Count;
 
         // Shows the shown page's columns (and, while sliding, the one it's leaving), with the orbit line running
-        // off whichever edges have more planets beyond
+        // off whichever edges have more planets beyond, and the arrows where they do
         private void ShowPageColumns(int alsoPage = -1)
         {
             for (int i = 0; i < _columns.Count; i++)
             {
                 bool onPage = i >= _pageFirst[_page] && i < PageEnd(_page);
                 bool onOther = alsoPage >= 0 && i >= _pageFirst[alsoPage] && i < PageEnd(alsoPage);
-                _columns[i].Root.gameObject.SetActive(onPage || onOther);
+                _columns[i].Root.style.display = onPage || onOther ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
-            float scale = _content.localScale.x;
             float start = PageStart(_pageFirst[_page]);
-            float end = start + _pagedSize.x / scale;
+            float end = start + _pagedSize.x / _scale;
             bool hasPrevious = _page > 0, hasNext = _page < _pageFirst.Count - 1;
 
             PlaceLine(_lineToPrevious, hasPrevious, new Vector2(start - LineOverrun, _rowCentre),
                 new Vector2(hasPrevious ? _columns[_pageFirst[_page]].Left : start, _rowCentre));
             PlaceLine(_lineToNext, hasNext, new Vector2(hasNext ? _columns[PageEnd(_page) - 1].Right : end, _rowCentre),
                 new Vector2(end + LineOverrun, _rowCentre));
+
+            // Arrows only where the row of planets carries on past the page
+            ShowHint(_leftHint, hasPrevious);
+            ShowHint(_rightHint, hasNext);
         }
 
-        private static void PlaceLine(Image line, bool shown, Vector2 from, Vector2 to)
+        private static void ShowHint(VisualElement hint, bool shown)
+        {
+            hint.EnableInClassList("kernel-map__hint--shown", shown);
+            hint.pickingMode = shown ? PickingMode.Position : PickingMode.Ignore;
+        }
+
+        private static void PlaceLine(VisualElement line, bool shown, Vector2 from, Vector2 to)
         {
             if (line == null) return;
-            line.gameObject.SetActive(shown);
-            if (!shown) return;
-
-            var rect = (RectTransform)line.transform;
-            rect.anchoredPosition = (from + to) / 2f;
-            rect.sizeDelta = new Vector2(Mathf.Max(Mathf.Abs(to.x - from.x), LineWidth), LineWidth);
+            line.style.display = shown ? DisplayStyle.Flex : DisplayStyle.None;
+            if (shown) SetLine(line, from, to);
         }
 
         // Slides the map a page left (-1) or right (+1)
@@ -279,34 +282,10 @@ namespace KERNEL.UI
             int leaving = _page;
             _page = page;
             ShowPageColumns(alsoPage: leaving);
-            _pageFrom = _content.anchoredPosition.x;
+            _pageFrom = _contentX;
             _pageTo = PageOffset(_page);
             _pageTime = 0f;
             _paging = true;
-        }
-
-        private EdgeHint AddEdgeHint(bool left)
-        {
-            RectTransform hint = NewRect(left ? "Left Arrow" : "Right Arrow", transform);
-            hint.anchorMin = new Vector2(left ? 0f : 1f, 0f);
-            hint.anchorMax = new Vector2(left ? 0f : 1f, 1f);
-            hint.pivot = new Vector2(left ? 0f : 1f, 0.5f);
-            hint.sizeDelta = new Vector2(HintWidth, 0f);
-
-            Image fade = NewImage("Fade", hint, left ? FadeLeft : FadeRight, HintFadeColor);
-            var fadeRect = (RectTransform)fade.transform;
-            fadeRect.anchorMin = Vector2.zero;
-            fadeRect.anchorMax = Vector2.one;
-            fadeRect.sizeDelta = Vector2.zero;
-
-            Image chevron = NewImage("Chevron", hint, left ? ChevronLeft : ChevronRight, ChevronColor);
-            ((RectTransform)chevron.transform).sizeDelta = new Vector2(ChevronSize * 0.5f, ChevronSize);
-            chevron.raycastTarget = false;
-
-            var group = hint.gameObject.AddComponent<CanvasGroup>();
-            EdgeHint edge = hint.gameObject.AddComponent<EdgeHint>();
-            edge.Initialize(this, left ? -1 : 1, group, chevron);
-            return edge;
         }
 
         // The ledger is rebuilt whenever the screen opens and after every scored report, but the map only changes
@@ -321,8 +300,8 @@ namespace KERNEL.UI
                 return;
             }
 
-            _laidOutShape = shape;
             Layout();
+            if (_content != null) _laidOutShape = shape;
         }
 
         // Everything the layout depends on: which bodies there are, how they nest and order, their names and sizes
@@ -346,7 +325,7 @@ namespace KERNEL.UI
             Dictionary<string, BodyEntry> byName = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b)))
                 .ToDictionary(b => b.BodyName);
             foreach (BodyNode node in _nodes)
-                if (byName.TryGetValue(node.Body.BodyName, out BodyEntry fresh)) node.Rebind(fresh);
+                if (byName.TryGetValue(node.Body.BodyName, out BodyEntry fresh)) node.Body = fresh;
 
             if (_selected == null || !byName.TryGetValue(_selected, out BodyEntry selected)) return;
             SelectedBody = selected;
@@ -355,11 +334,6 @@ namespace KERNEL.UI
 
         private void Layout()
         {
-            foreach (Transform child in _content) Destroy(child.gameObject);
-            foreach (Transform child in _picker) Destroy(child.gameObject);
-            _nodes.Clear();
-            _columns.Clear();
-
             // Every star is a system, including one orbiting another star; so is a top-level body that isn't one
             var systems = new List<BodyEntry>();
             void CollectStars(BodyEntry body)
@@ -378,25 +352,41 @@ namespace KERNEL.UI
 
             BodyEntry anchor = systems.FirstOrDefault(b => b.BodyName == _system) ?? systems[0];
             _system = anchor.BodyName;
-            BuildTitle();
+
+            // Keep the selection across rebuilds and system changes; start on the home planet. The sidebar needs
+            // it even before the window is up
+            List<BodyEntry> all = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b))).ToList();
+            BodyEntry selected = all.FirstOrDefault(b => b.BodyName == _selected)
+                                 ?? all.FirstOrDefault(b => b.BodyName == HomeBody)
+                                 ?? Orbiting(anchor).FirstOrDefault() ?? anchor;
+            _selected = selected.BodyName;
+            SelectedBody = selected;
+
+            if (_content != null) Draw(systems, anchor);
+            Selected?.Invoke(selected);
+        }
+
+        // Stars orbiting a body are systems of their own
+        private static IEnumerable<BodyEntry> Orbiting(BodyEntry body) => body.Children.Where(child => !child.IsStar);
+
+        private void Draw(List<BodyEntry> systems, BodyEntry anchor)
+        {
+            _layout++;
+            _content.Clear();
+            _picker.Clear();
+            _nodes.Clear();
+            _columns.Clear();
+
             float top = TitleHeight;
+            _picker.style.display = systems.Count > 1 ? DisplayStyle.Flex : DisplayStyle.None;
             if (systems.Count > 1)
             {
                 BuildPicker(systems, anchor);
                 top += PickerHeight;
             }
 
-            double largest = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b)))
+            _largest = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b)))
                 .Where(b => !b.IsStar).Select(b => b.Radius).DefaultIfEmpty(0).Max();
-            float SizeOf(BodyEntry body)
-            {
-                if (body.IsStar) return StarSize;
-                if (largest <= 0) return MinBodySize;
-                return Mathf.Max(MinBodySize, MaxBodySize * (float)Math.Sqrt(body.Radius / largest));
-            }
-
-            // Stars orbiting this body are systems of their own
-            IEnumerable<BodyEntry> Orbiting(BodyEntry body) => body.Children.Where(child => !child.IsStar);
 
             // How wide a planet's column needs to be for it, its moons and theirs
             float ColumnWidth(BodyEntry body, int depth) =>
@@ -404,17 +394,17 @@ namespace KERNEL.UI
 
             // Stacks a body's moons downward from y at x, then their moons further right below each. The line
             // down to each runs from just below the name above it, so it never crosses a name
-            void StackMoons(Transform column, BodyEntry parent, float x, float lineFrom, ref float y)
+            void StackMoons(VisualElement column, BodyEntry parent, float x, float lineFrom, ref float y)
             {
                 foreach (BodyEntry moon in Orbiting(parent))
                 {
                     float size = SizeOf(moon);
                     float half = HalfHeight(moon, size);
-                    float centre = y - half;
+                    float centre = y + half;
                     AddLine(column, new Vector2(x, lineFrom), new Vector2(x, centre));
                     AddBody(column, moon, new Vector2(x, centre), size);
-                    lineFrom = centre - half - LabelGap - LabelHeight;
-                    y -= 2f * half + LabelGap + LabelHeight + RowGap;
+                    lineFrom = centre + half + LabelGap + LabelHeight;
+                    y += 2f * half + LabelGap + LabelHeight + RowGap;
 
                     if (!Orbiting(moon).Any()) continue;
                     float subX = x + SubIndent;
@@ -426,16 +416,17 @@ namespace KERNEL.UI
             List<BodyEntry> planets = Orbiting(anchor).ToList();
 
             // Planets line up with the star's centre; moons hang below their planet. Each column carries the
-            // orbit line halfway across the gaps either side, so a page's columns join up into one line
-            _rowCentre = -(Margin + StarSize / 2f);
+            // orbit line halfway across the gaps either side, so a page's columns join up into one line. In the
+            // content's coordinates y runs down from its top
+            _rowCentre = Margin + StarSize / 2f;
             float x = Margin;
-            RectTransform starColumn = NewColumn();
+            VisualElement starColumn = NewColumn();
             AddBody(starColumn, anchor, new Vector2(x + StarSize / 2f, _rowCentre), SizeOf(anchor));
             if (planets.Count > 0)
                 AddLine(starColumn, new Vector2(x + StarSize / 2f, _rowCentre), new Vector2(x + StarSize + ColumnGap / 2f, _rowCentre));
             _columns.Add((starColumn, x, x + StarSize));
             x += StarSize + ColumnGap;
-            float bottom = _rowCentre - StarSize / 2f - LabelGap - LabelHeight;
+            float bottom = _rowCentre + StarSize / 2f + LabelGap + LabelHeight;
 
             for (int i = 0; i < planets.Count; i++)
             {
@@ -443,7 +434,7 @@ namespace KERNEL.UI
                 float planetSize = SizeOf(planet);
                 float column = Mathf.Max(MinColumnWidth, ColumnWidth(planet, 0));
                 float cx = x + column / 2f;
-                RectTransform root = NewColumn();
+                VisualElement root = NewColumn();
                 _columns.Add((root, x, x + column));
 
                 bool last = i == planets.Count - 1;
@@ -451,84 +442,86 @@ namespace KERNEL.UI
                     new Vector2(last ? cx : x + column + ColumnGap / 2f, _rowCentre));
                 AddBody(root, planet, new Vector2(cx, _rowCentre), planetSize);
                 float planetHalf = HalfHeight(planet, planetSize);
-                float my = _rowCentre - planetHalf - LabelGap - LabelHeight - RowGap;
+                float my = _rowCentre + planetHalf + LabelGap + LabelHeight + RowGap;
                 if (Orbiting(planet).Any())
-                {
-                    StackMoons(root, planet, cx, _rowCentre - planetHalf - LabelGap - LabelHeight, ref my);
-                }
+                    StackMoons(root, planet, cx, _rowCentre + planetHalf + LabelGap + LabelHeight, ref my);
 
-                bottom = Mathf.Min(bottom, my + RowGap);
+                bottom = Mathf.Max(bottom, my - RowGap);
                 x += column + ColumnGap;
             }
 
-            _lineToPrevious = NewImage("Line To Previous Page", _content, null, LineColor);
-            _lineToNext = NewImage("Line To Next Page", _content, null, LineColor);
-            foreach (Image line in new[] { _lineToPrevious, _lineToNext })
-            {
-                line.raycastTarget = false;
-                var lineRect = (RectTransform)line.transform;
-                lineRect.anchorMin = lineRect.anchorMax = new Vector2(0f, 1f);
-                lineRect.SetAsFirstSibling();
-            }
+            _lineToPrevious = NewLine();
+            _lineToNext = NewLine();
+            _content.Insert(0, _lineToPrevious);
+            _content.Insert(0, _lineToNext);
 
             _contentWidth = x - ColumnGap + Margin;
-            _contentHeight = -(bottom - Margin);
+            _contentHeight = bottom + Margin;
             _top = top;
-            _content.sizeDelta = new Vector2(_contentWidth, _contentHeight);
-            _content.localScale = Vector3.one;
-            _content.anchoredPosition = new Vector2(0f, -top);
+            _content.style.top = top;
+            _content.style.width = _contentWidth;
+            _content.style.height = _contentHeight;
+            _content.style.scale = new Scale(Vector3.one);
+            _scale = 1f;
+            _contentX = float.NaN;
+            SetContentX(0f);
             _paging = false;
             _page = 0;
             _pagedSize = new Vector2(-1f, -1f);
-            foreach (EdgeHint hint in new[] { _leftHint, _rightHint })
+            foreach (VisualElement hint in new[] { _leftHint, _rightHint })
             {
-                var hintRect = (RectTransform)hint.transform;
-                hintRect.offsetMax = new Vector2(hintRect.offsetMax.x, -top);
+                hint.style.top = top;
+                ShowHint(hint, false);
             }
 
-            // Keep the selection across rebuilds and system changes; start on the home planet
-            List<BodyEntry> all = _roots.SelectMany(b => new[] { b }.Concat(Descendants(b))).ToList();
-            BodyEntry body = all.FirstOrDefault(b => b.BodyName == _selected)
-                             ?? all.FirstOrDefault(b => b.BodyName == HomeBody)
-                             ?? Orbiting(anchor).FirstOrDefault() ?? anchor;
-            _selected = body.BodyName;
-            SelectedBody = body;
             foreach (BodyNode node in _nodes) node.SetSelected(node.Body.BodyName == _selected);
-            Selected?.Invoke(body);
+            PrepareOtherSystems(systems, anchor);
         }
 
-        private void BuildTitle()
+        // Asks for the other systems' art (and rings) right after the shown one's, so it's ready by the time the
+        // picker switches to them. Sizes don't depend on which system is shown, so it's the same art they'll use.
+        // Done once per set of bodies; art is made one body per frame behind the shown system's
+        private void PrepareOtherSystems(List<BodyEntry> systems, BodyEntry shown)
         {
-            Transform title = transform.Find("Title");
-            if (_fullName == null)
-            {
-                _fullName = NewLabel("Full Name", title, Localization.Translate(Localization.FullTitle), FullNameFontSize);
-                _fullName.color = Color.white;
-                _fullName.overflowMode = TextOverflowModes.Overflow;
-            }
+            if (_laidOutShape != null && _preparedShape == Shape(_roots)) return;
+            _preparedShape = Shape(_roots);
 
-            // The sidebar's font may only have become available since the last layout
-            ApplyFont(_fullName);
+            foreach (BodyEntry system in systems.Where(s => s != shown))
+            foreach (BodyEntry body in new[] { system }.Concat(Orbiting(system).SelectMany(b => new[] { b }.Concat(Descendants(b)))))
+            {
+                float size = SizeOf(body);
+                BodyArt.Request(body, size, _ => { });
+                BodyArt.Rings(body, size);
+            }
+        }
+
+        private float SizeOf(BodyEntry body)
+        {
+            if (body.IsStar) return StarSize;
+            if (_largest <= 0) return MinBodySize;
+            return Mathf.Max(MinBodySize, MaxBodySize * (float)Math.Sqrt(body.Radius / _largest));
         }
 
         // A row of system names along the top; the shown one is highlighted
         private void BuildPicker(List<BodyEntry> systems, BodyEntry shown)
         {
-            float x = 0f;
             foreach (BodyEntry system in systems)
             {
-                TextMeshProUGUI label = NewLabel(system.BodyName, _picker, system.DisplayName, PickerFontSize);
-                label.alignment = TextAlignmentOptions.Left;
-                label.raycastTarget = true;
-                float width = label.GetPreferredValues(system.DisplayName).x;
-                var rect = (RectTransform)label.transform;
-                rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
-                rect.pivot = new Vector2(0f, 1f);
-                rect.sizeDelta = new Vector2(width, PickerHeight - 8f);
-                rect.anchoredPosition = new Vector2(x, 0f);
-                x += width + PickerGap;
+                var button = new Button { text = system.DisplayName };
+                button.AddToClassList("kernel-map__system");
+                if (system == shown)
+                {
+                    // Already showing, so it neither does nor sounds like anything
+                    button.AddToClassList("kernel-map__system--shown");
+                    button.AddToClassList("ui-sound-none");
+                }
+                else
+                {
+                    string name = system.BodyName;
+                    button.clicked += () => ShowSystem(name);
+                }
 
-                label.gameObject.AddComponent<SystemButton>().Initialize(this, system.BodyName, label, system == shown);
+                _picker.Add(button);
             }
         }
 
@@ -539,98 +532,98 @@ namespace KERNEL.UI
             Layout();
         }
 
-        // Gives a label the sidebar's font, looking it up only until it's been found
-        private void ApplyFont(TextMeshProUGUI label)
-        {
-            if (_font == null)
-            {
-                TextMeshProUGUI source = ResearchUi.FontSource(this);
-                if (source == null) return;
-                _font = source.font;
-                _fontMaterial = source.fontSharedMaterial;
-            }
-
-            label.font = _font;
-            label.fontSharedMaterial = _fontMaterial;
-        }
-
-        private void PlayHoverSound(Transform at) => ResearchUi.PlayHover(this, at);
-
-        private void PlayPressSound(Transform at) => ResearchUi.PlayPress(this, at);
-
         private static IEnumerable<BodyEntry> Descendants(BodyEntry body) =>
             body.Children.SelectMany(child => new[] { child }.Concat(Descendants(child)));
 
-        // A group for one column, placed at the map's top left so its contents use the map's coordinates
-        private RectTransform NewColumn()
+        // A group for one column, at the content's top left so its contents use the content's coordinates
+        private VisualElement NewColumn()
         {
-            RectTransform column = NewRect("Column", _content);
-            column.anchorMin = column.anchorMax = new Vector2(0f, 1f);
-            column.pivot = new Vector2(0f, 1f);
-            column.sizeDelta = Vector2.zero;
-            column.anchoredPosition = Vector2.zero;
+            var column = new VisualElement { pickingMode = PickingMode.Ignore };
+            column.AddToClassList("kernel-map__column");
+            _content.Add(column);
             return column;
         }
 
-        private void AddBody(Transform parent, BodyEntry body, Vector2 centre, float size)
+        private void AddBody(VisualElement parent, BodyEntry body, Vector2 centre, float size)
         {
-            RectTransform root = NewRect(body.BodyName, parent);
-            root.anchorMin = root.anchorMax = new Vector2(0f, 1f);
-            root.sizeDelta = new Vector2(size, size);
-            root.anchoredPosition = centre;
-
-            // A circle around a body; around a ringed one, an ellipse taking in its rings too
-            var ringSize = new Vector2(size * BodyArt.RingReach(body), HalfHeight(body, size) * 2f) + Vector2.one * (RingPadding * 2f);
-            Image ring = NewImage("Ring", root, DashedRing(ringSize), Color.clear);
-            ((RectTransform)ring.transform).sizeDelta = ringSize;
-            ring.raycastTarget = false;
+            var button = new Button();
+            button.AddToClassList("kernel-map__body");
+            Place(button, centre, new Vector2(size, size));
 
             // The rings' back half is drawn behind the body and their front half over it
             var rings = BodyArt.Rings(body, size);
-            if (rings != null)
-            {
-                Image back = NewImage("Rings Back", root, rings.Value.Back, Color.white);
-                ((RectTransform)back.transform).sizeDelta = rings.Value.Size;
-                back.raycastTarget = false;
-            }
+            if (rings != null) button.Add(NewSprite("kernel-map__rings", rings.Value.Back, size, rings.Value.Size));
 
             // A placeholder circle until the body's art has loaded
-            Image disc = NewImage("Body", root, Disc, body.IsStar ? StarColor : PlaceholderColor(body.BodyName));
-            ((RectTransform)disc.transform).sizeDelta = new Vector2(size, size);
-
-            if (rings != null)
-            {
-                Image front = NewImage("Rings Front", root, rings.Value.Front, Color.white);
-                ((RectTransform)front.transform).sizeDelta = rings.Value.Size;
-                front.raycastTarget = false;
-            }
-
-            TextMeshProUGUI label = NewLabel("Label", root, body.DisplayName, 18f);
-            var labelRect = (RectTransform)label.transform;
-            labelRect.sizeDelta = new Vector2(Mathf.Max(size, MinColumnWidth + ColumnGap * 0.5f), LabelHeight);
-            labelRect.anchoredPosition = new Vector2(0f, -(HalfHeight(body, size) + LabelGap + LabelHeight / 2f));
+            VisualElement disc = NewSprite("kernel-map__art", Disc, size, new Vector2(size, size));
+            disc.style.unityBackgroundImageTintColor = body.IsStar ? StarColor : PlaceholderColor(body.BodyName);
+            button.Add(disc);
 
             // Hovering lays a white copy of the body's shape over it, which brightens it past what a tint can
-            Image glow = NewImage("Hover Glow", disc.transform, Disc, Color.white);
-            var glowRect = (RectTransform)glow.transform;
-            glowRect.anchorMin = Vector2.zero;
-            glowRect.anchorMax = Vector2.one;
-            glowRect.sizeDelta = Vector2.zero;
-            glow.raycastTarget = false;
+            var glow = new VisualElement { pickingMode = PickingMode.Ignore };
+            glow.AddToClassList("kernel-map__glow");
+            disc.Add(glow);
 
-            BodyNode node = disc.gameObject.AddComponent<BodyNode>();
-            node.Initialize(this, body, disc, ring, glow);
+            if (rings != null) button.Add(NewSprite("kernel-map__rings", rings.Value.Front, size, rings.Value.Size));
+
+            // A circle around a body; around a ringed one, an ellipse taking in its rings too
+            var outline = new Vector2(size * BodyArt.RingReach(body), HalfHeight(body, size) * 2f) + Vector2.one * (RingPadding * 2f);
+            button.Add(NewSprite("kernel-map__outline", DashedRing(outline), size, outline));
+
+            var label = new Label(body.DisplayName) { pickingMode = PickingMode.Ignore };
+            label.AddToClassList("kernel-map__label");
+            float labelWidth = Mathf.Max(size, MinColumnWidth + ColumnGap * 0.5f);
+            label.style.width = labelWidth;
+            label.style.left = (size - labelWidth) / 2f;
+            label.style.top = size / 2f + HalfHeight(body, size) + LabelGap;
+            button.Add(label);
+
+            var node = new BodyNode(body, disc, glow);
+            button.RegisterCallback<PointerEnterEvent>(_ => node.SetHovered(true));
+            button.RegisterCallback<PointerLeaveEvent>(_ => node.SetHovered(false));
+            button.clicked += () => Select(node);
+            node.Button = button;
             _nodes.Add(node);
+            parent.Add(button);
 
+            // Art can arrive before the window has first been shown (and its panel attached), so it's kept unless
+            // this layout has been replaced since
+            int layout = _layout;
             BodyArt.Request(body, size, art =>
             {
-                if (art == null || disc == null) return;
-                disc.sprite = art;
+                if (art == null || layout != _layout) return;
                 // A star's art includes its glow, so it's wider than the disc
                 float scale = body.IsStar ? BodyArt.StarArtScale(BodyArt.Pixels(size)) : 1f;
-                ((RectTransform)disc.transform).sizeDelta = new Vector2(size, size) * scale;
+                SetSprite(disc, art, size, new Vector2(size, size) * scale);
                 node.SetBaseColour(ArtTint);
             });
+        }
+
+        // An element showing a sprite, centred in a body's box of the given size
+        private static VisualElement NewSprite(string className, Sprite sprite, float box, Vector2 size)
+        {
+            var element = new VisualElement { pickingMode = PickingMode.Ignore };
+            element.AddToClassList(className);
+            SetSprite(element, sprite, box, size);
+            return element;
+        }
+
+        private static void SetSprite(VisualElement element, Sprite sprite, float box, Vector2 size)
+        {
+            element.style.backgroundImage = new StyleBackground(sprite);
+            element.style.width = size.x;
+            element.style.height = size.y;
+            element.style.left = (box - size.x) / 2f;
+            element.style.top = (box - size.y) / 2f;
+        }
+
+        // Places an absolutely positioned element by its centre
+        private static void Place(VisualElement element, Vector2 centre, Vector2 size)
+        {
+            element.style.left = centre.x - size.x / 2f;
+            element.style.top = centre.y - size.y / 2f;
+            element.style.width = size.x;
+            element.style.height = size.y;
         }
 
         // How far a body (or its rings) reaches above and below its centre
@@ -641,31 +634,25 @@ namespace KERNEL.UI
         private static float Footprint(BodyEntry body, float size) =>
             Mathf.Max(size, size * BodyArt.RingReach(body) + 4f * BodyArt.Unit);
 
-        private TextMeshProUGUI NewLabel(string name, Transform parent, string text, float fontSize)
+        private static VisualElement NewLine()
         {
-            var label = NewRect(name, parent).gameObject.AddComponent<TextMeshProUGUI>();
-            label.text = text;
-            label.alignment = TextAlignmentOptions.Center;
-            label.textWrappingMode = TextWrappingModes.NoWrap;
-            label.overflowMode = TextOverflowModes.Ellipsis;
-            label.color = LabelColor;
-            label.raycastTarget = false;
-            ApplyFont(label);
-            label.fontSize = fontSize;
-            return label;
+            var line = new VisualElement { pickingMode = PickingMode.Ignore };
+            line.AddToClassList("kernel-map__line");
+            return line;
         }
 
-        private void AddLine(Transform parent, Vector2 from, Vector2 to)
+        private static void AddLine(VisualElement parent, Vector2 from, Vector2 to)
         {
-            Image line = NewImage("Line", parent, null, LineColor);
-            line.raycastTarget = false;
-            var rect = (RectTransform)line.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
-            rect.anchoredPosition = (from + to) / 2f;
-            Vector2 span = to - from;
-            rect.sizeDelta = new Vector2(Mathf.Max(Mathf.Abs(span.x), LineWidth), Mathf.Max(Mathf.Abs(span.y), LineWidth));
+            VisualElement line = NewLine();
+            SetLine(line, from, to);
             // Behind the bodies
-            rect.SetAsFirstSibling();
+            parent.Insert(0, line);
+        }
+
+        private static void SetLine(VisualElement line, Vector2 from, Vector2 to)
+        {
+            Vector2 span = to - from;
+            Place(line, (from + to) / 2f, new Vector2(Mathf.Max(Mathf.Abs(span.x), LineWidth), Mathf.Max(Mathf.Abs(span.y), LineWidth)));
         }
 
         private void Select(BodyNode node)
@@ -684,40 +671,24 @@ namespace KERNEL.UI
             return Color.HSVToRGB(hue, 0.35f, 0.75f);
         }
 
-        private static RectTransform NewRect(string name, Transform parent)
-        {
-            var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
-            rect.SetParent(parent, false);
-            return rect;
-        }
-
-        private static Image NewImage(string name, Transform parent, Sprite sprite, Color color)
-        {
-            var image = NewRect(name, parent).gameObject.AddComponent<Image>();
-            image.sprite = sprite;
-            image.color = color;
-            return image;
-        }
-
         private static Sprite FadeLeft => _fadeLeft ??= FadeSprite(towardsLeft: true);
         private static Sprite FadeRight => _fadeRight ??= FadeSprite(towardsLeft: false);
         private static Sprite ChevronLeft => _chevronLeft ??= ChevronSprite(pointsLeft: true);
         private static Sprite ChevronRight => _chevronRight ??= ChevronSprite(pointsLeft: false);
+        private static Sprite Disc => _disc ??= CircleSprite();
 
-        // White, opaque at the page edge and clear towards the middle; tinted by the Image
+        // White, opaque at the page edge and clear towards the middle; tinted by the style
         private static Sprite FadeSprite(bool towardsLeft)
         {
             const int width = 64;
-            var texture = new Texture2D(width, 1, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            var pixels = new Color32[width];
             for (int x = 0; x < width; x++)
             {
                 float t = (x + 0.5f) / width;
-                float a = Mathf.SmoothStep(0f, 1f, towardsLeft ? 1f - t : t);
-                texture.SetPixel(x, 0, new Color(1f, 1f, 1f, a));
+                pixels[x] = new Color(1f, 1f, 1f, Mathf.SmoothStep(0f, 1f, towardsLeft ? 1f - t : t));
             }
 
-            texture.Apply();
-            return Sprite.Create(texture, new Rect(0, 0, width, 1), new Vector2(0.5f, 0.5f));
+            return NewSprite(width, 1, pixels);
         }
 
         // A smooth-edged white chevron, twice as tall as it is wide
@@ -725,20 +696,19 @@ namespace KERNEL.UI
         {
             const int w = 32, h = 64;
             const float stroke = 3.2f;
-            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
             var tip = new Vector2(pointsLeft ? 6f : w - 6f, h / 2f);
             var top = new Vector2(pointsLeft ? w - 6f : 6f, h - 6f);
             var bottom = new Vector2(top.x, 6f);
+            var pixels = new Color32[w * h];
             for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
             {
                 var p = new Vector2(x + 0.5f, y + 0.5f);
                 float d = Mathf.Min(DistanceToSegment(p, top, tip), DistanceToSegment(p, tip, bottom));
-                texture.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(stroke - d)));
+                pixels[y * w + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(stroke - d));
             }
 
-            texture.Apply();
-            return Sprite.Create(texture, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f));
+            return NewSprite(w, h, pixels);
         }
 
         private static float DistanceToSegment(Vector2 p, Vector2 a, Vector2 b)
@@ -748,10 +718,24 @@ namespace KERNEL.UI
             return Vector2.Distance(p, a + ab * t);
         }
 
-        private static Sprite Disc => _disc ??= CircleSprite(0f);
+        // A smooth-edged white circle, tinted by the style
+        private static Sprite CircleSprite()
+        {
+            const int size = 128;
+            float r = size / 2f;
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(r, r));
+                pixels[y * size + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(r - d));
+            }
 
-        // A dashed ellipse (a circle when both sides match), one per size, so every ring has the same dash length
-        // and a whole number of dashes all round
+            return NewSprite(size, size, pixels);
+        }
+
+        // A dashed ellipse (a circle when both sides match), one per size, so every outline has the same dash
+        // length and a whole number of dashes all round
         private static Sprite DashedRing(Vector2 outline)
         {
             (int, int) key = (Mathf.RoundToInt(outline.x), Mathf.RoundToInt(outline.y));
@@ -797,216 +781,71 @@ namespace KERNEL.UI
                 pixels[y * width + x] = new Color(1f, 1f, 1f, across * inDash);
             }
 
-            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            texture.SetPixels32(pixels);
-            texture.Apply();
-            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f), 100f * scale);
+            Sprite sprite = NewSprite(width, height, pixels);
             DashedRings[key] = sprite;
             return sprite;
         }
 
-        // A smooth-edged white circle (or ring, inner radius as a fraction of the outer), tinted by the Image
-        private static Sprite CircleSprite(float inner)
+        private static Sprite NewSprite(int width, int height, Color32[] pixels)
         {
-            const int size = 128;
-            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            float r = size / 2f;
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-            {
-                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(r, r));
-                float a = Mathf.Clamp01(r - d) * (inner > 0f ? Mathf.Clamp01(d - r * inner) : 1f);
-                texture.SetPixel(x, y, new Color(1f, 1f, 1f, a));
-            }
-
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            texture.SetPixels32(pixels);
             texture.Apply();
-            return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+            return Sprite.Create(texture, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
         }
 
         /// <summary>
-        /// A fade and arrow at one edge of the map, shown while bodies are off the page on that side. Clicking
-        /// it slides the map over.
+        /// One body on the map: brightens on hover and shows a dashed outline when selected, like the tech tree's
+        /// nodes. Its button takes UitkForKsp2's UI sounds.
         /// </summary>
-        private class EdgeHint : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+        private class BodyNode
         {
-            private SystemMap _map;
-            private int _direction;
-            private CanvasGroup _group;
-            private Image _chevron;
-            private bool _shown;
-
-            public void Initialize(SystemMap map, int direction, CanvasGroup group, Image chevron)
-            {
-                _map = map;
-                _direction = direction;
-                _group = group;
-                _chevron = chevron;
-                _group.alpha = 0f;
-                _group.blocksRaycasts = false;
-            }
-
-            public void SetShown(bool shown)
-            {
-                _shown = shown;
-                _group.blocksRaycasts = shown;
-            }
-
-            private void Update()
-            {
-                _group.alpha = Mathf.MoveTowards(_group.alpha, _shown ? 1f : 0f, Time.unscaledDeltaTime / HintFadeTime);
-            }
-
-            public void OnPointerEnter(PointerEventData eventData)
-            {
-                _chevron.color = ChevronHoverColor;
-                _map.PlayHoverSound(transform);
-            }
-
-            public void OnPointerExit(PointerEventData eventData)
-            {
-                _chevron.color = ChevronColor;
-            }
-
-            public void OnPointerClick(PointerEventData eventData)
-            {
-                if (eventData.button != PointerEventData.InputButton.Left) return;
-                _map.PlayPressSound(transform);
-                _map.Page(_direction);
-            }
-        }
-
-        /// <summary>
-        /// A system name in the picker: brightens on hover, and shows that system when clicked.
-        /// </summary>
-        private class SystemButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
-        {
-            private SystemMap _map;
-            private string _system;
-            private TextMeshProUGUI _label;
-            private bool _shown;
-
-            public void Initialize(SystemMap map, string system, TextMeshProUGUI label, bool shown)
-            {
-                _map = map;
-                _system = system;
-                _label = label;
-                _shown = shown;
-                _label.color = shown ? PickerSelectedColor : PickerColor;
-            }
-
-            public void OnPointerEnter(PointerEventData eventData)
-            {
-                if (_shown) return;
-                _label.color = PickerHoverColor;
-                _map.PlayHoverSound(transform);
-            }
-
-            public void OnPointerExit(PointerEventData eventData)
-            {
-                if (!_shown) _label.color = PickerColor;
-            }
-
-            public void OnPointerClick(PointerEventData eventData)
-            {
-                if (_shown || eventData.button != PointerEventData.InputButton.Left) return;
-                _map.PlayPressSound(transform);
-                _map.ShowSystem(_system);
-            }
-        }
-
-        /// <summary>
-        /// One clickable body: brightens on hover and shows a dashed ring when selected, like the tech tree's
-        /// nodes, with the stock UI sounds.
-        /// </summary>
-        private class BodyNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
-        {
-            private static readonly Color SelectedRing = Color.white;
-            // Hovering brightens the body, as it does a tech node (the ring is only for the selection): its tint goes
-            // to full and a white copy of its shape shows over it at this opacity
-            private const float HoverGlow = 0.3f;
-
-            private SystemMap _map;
-            private Image _body, _ring, _glow;
+            private readonly VisualElement _disc, _glow;
+            private Color _baseColour;
+            private bool _hovered;
             // The art the glow's shape was made from; it's made on the first hover, not for every body up front
             private Sprite _glowSource;
-            private Color _bodyColour;
-            private bool _hovered, _selected;
 
-            public BodyEntry Body { get; private set; }
-
-            public void Initialize(SystemMap map, BodyEntry body, Image disc, Image ring, Image glow)
+            public BodyNode(BodyEntry body, VisualElement disc, VisualElement glow)
             {
-                _map = map;
                 Body = body;
-                _body = disc;
-                _bodyColour = disc.color;
-                _ring = ring;
+                _disc = disc;
                 _glow = glow;
-                Refresh();
+                _baseColour = disc.style.unityBackgroundImageTintColor.value;
             }
+
+            public BodyEntry Body { get; set; }
+
+            public Button Button { get; set; }
 
             public void SetBaseColour(Color colour)
             {
-                _bodyColour = colour;
+                _baseColour = colour;
                 Refresh();
             }
 
-            public void SetSelected(bool selected)
+            public void SetSelected(bool selected) => Button.EnableInClassList("kernel-map__body--selected", selected);
+
+            public void SetHovered(bool hovered)
             {
-                _selected = selected;
+                _hovered = hovered;
                 Refresh();
             }
 
-            public void Rebind(BodyEntry body) => Body = body;
-
-            public void OnPointerEnter(PointerEventData eventData)
-            {
-                _hovered = true;
-                Refresh();
-                _map.PlayHoverSound(transform);
-            }
-
-            public void OnPointerExit(PointerEventData eventData)
-            {
-                _hovered = false;
-                Refresh();
-            }
-
-            public void OnPointerClick(PointerEventData eventData)
-            {
-                if (eventData.button != PointerEventData.InputButton.Left) return;
-
-                _map.PlayPressSound(transform);
-                _map.Select(this);
-            }
-
+            // Hovering takes the tint to full and shows the white copy of the body's shape over it
             private void Refresh()
             {
-                // Off rather than clear when not selected, so unselected rings cost nothing to draw
-                if (_ring != null)
+                _disc.style.unityBackgroundImageTintColor = _hovered ? Color.white : _baseColour;
+
+                Sprite art = _disc.style.backgroundImage.value.sprite;
+                if (_hovered && art != null && art != _glowSource)
                 {
-                    _ring.color = SelectedRing;
-                    _ring.enabled = _selected;
-                }
-                if (_body != null)
-                {
-                    Color colour = _hovered ? Color.white : _bodyColour;
-                    colour.a = _bodyColour.a;
-                    _body.color = colour;
+                    _glowSource = art;
+                    // The placeholder circle is already white
+                    _glow.style.backgroundImage = new StyleBackground(art == Disc ? Disc : BodyArt.Silhouette(art));
                 }
 
-                if (_glow != null)
-                {
-                    if (_hovered && _body != null && _body.sprite != _glowSource)
-                    {
-                        _glowSource = _body.sprite;
-                        // The placeholder circle is already white
-                        _glow.sprite = _glowSource == Disc ? Disc : BodyArt.Silhouette(_glowSource);
-                    }
-
-                    _glow.color = new Color(1f, 1f, 1f, HoverGlow);
-                    _glow.enabled = _hovered;
-                }
+                _glow.style.display = _hovered ? DisplayStyle.Flex : DisplayStyle.None;
             }
         }
     }

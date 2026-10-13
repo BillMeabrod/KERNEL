@@ -1,0 +1,175 @@
+/* K.E.R.N.E.L's system map on the R&D page. Positions and sizes that come from the data (bodies, lines,
+   columns) are set by SystemMap; fixed looks are here. */
+
+/* The tech tree's view: the map only shows within it, so it slides in and out like the tree */
+.kernel-map {
+    position: absolute;
+    overflow: hidden;
+}
+
+/* The map's page, placed where the stock layout puts it as it slides. It's laid out in canvas units and scaled
+   onto the panel from its top left */
+.kernel-map__page {
+    position: absolute;
+    transform-origin: left top;
+}
+
+/* The bodies and orbit lines; scaled down to fit a page, and moved along to show other pages */
+.kernel-map__content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: left top;
+}
+
+.kernel-map__column,
+.kernel-map__line {
+    position: absolute;
+}
+
+.kernel-map__line {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* The page title: the full name (the tab already says K.E.R.N.E.L). Stays put while the map pages */
+.kernel-map__title {
+    position: absolute;
+    left: 60px;
+    top: 30px;
+    height: 44px;
+    font-size: 26px;
+    color: rgb(255, 255, 255);
+    -unity-text-align: lower-left;
+    white-space: nowrap;
+}
+
+/* The row of star systems, only shown with more than one */
+.kernel-map__picker {
+    position: absolute;
+    left: 60px;
+    top: 74px;
+    height: 36px;
+    flex-direction: row;
+}
+
+.kernel-map__system {
+    margin: 0 28px 0 0;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: none;
+    font-size: 20px;
+    color: rgb(153, 163, 184);
+    -unity-text-align: middle-left;
+}
+
+.kernel-map__system:hover {
+    background-color: rgba(0, 0, 0, 0);
+    color: rgb(217, 224, 242);
+}
+
+.kernel-map__system--shown,
+.kernel-map__system--shown:hover {
+    color: rgb(255, 214, 120);
+}
+
+/* A body: a button the size of its disc. Its rings, outline and name reach outside it */
+.kernel-map__body {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: none;
+    overflow: visible;
+}
+
+.kernel-map__body:hover,
+.kernel-map__body:active,
+.kernel-map__body:focus {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.kernel-map__art,
+.kernel-map__rings,
+.kernel-map__outline,
+.kernel-map__glow {
+    position: absolute;
+}
+
+/* The white copy of the body's shape laid over it on hover */
+.kernel-map__glow {
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.3);
+    display: none;
+}
+
+/* The dashed selection outline, like the tech tree's */
+.kernel-map__outline {
+    display: none;
+}
+
+.kernel-map__body--selected .kernel-map__outline {
+    display: flex;
+}
+
+.kernel-map__label {
+    position: absolute;
+    height: 28px;
+    font-size: 18px;
+    color: rgb(217, 224, 242);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Edge arrows, shown where the system carries on past the page; clicking one slides to the next page */
+/* Its height, background and fade tint are set by SystemMap, on the element, so the theme's button look can't win */
+.kernel-map__hint {
+    position: absolute;
+    width: 96px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-radius: 0;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+}
+
+.kernel-map__hint:hover,
+.kernel-map__hint:active,
+.kernel-map__hint:focus {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.kernel-map__hint--left {
+    left: 0;
+}
+
+.kernel-map__hint--right {
+    right: 0;
+}
+
+.kernel-map__hint--shown {
+    opacity: 1;
+}
+
+.kernel-map__chevron {
+    width: 20px;
+    height: 40px;
+    -unity-background-image-tint-color: rgba(217, 224, 242, 0.7);
+}
+
+.kernel-map__hint:hover .kernel-map__chevron {
+    -unity-background-image-tint-color: rgb(255, 255, 255);
+}

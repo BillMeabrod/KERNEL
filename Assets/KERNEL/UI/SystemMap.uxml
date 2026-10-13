@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- K.E.R.N.E.L's system map on the R&D page: laid over the tech tree's view and clipped to it, the way the
+         sidebar is laid over the stock sidebar. The page inside follows the map's place in the stock layout, so it
+         slides in and out with the tree. Its bodies, orbit lines and system picker are built by SystemMap. -->
+    <Style src="SystemMap.uss" />
+    <ui:VisualElement name="kernel-map" class="kernel-map" picking-mode="Ignore">
+        <ui:VisualElement name="page" class="kernel-map__page" picking-mode="Ignore">
+            <ui:VisualElement name="content" class="kernel-map__content" picking-mode="Ignore" />
+            <ui:Label name="title" text="#KERNEL/UI/FullTitle" class="kernel-map__title" picking-mode="Ignore" />
+            <ui:VisualElement name="picker" class="kernel-map__picker" picking-mode="Ignore" />
+            <ui:Button name="hint-left" class="kernel-map__hint kernel-map__hint--left">
+                <ui:VisualElement name="chevron" class="kernel-map__chevron" picking-mode="Ignore" />
+            </ui:Button>
+            <ui:Button name="hint-right" class="kernel-map__hint kernel-map__hint--right">
+                <ui:VisualElement name="chevron" class="kernel-map__chevron" picking-mode="Ignore" />
+            </ui:Button>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
