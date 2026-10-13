@@ -45,6 +45,7 @@ namespace KERNEL
             Ledger.Rebuilt += roots => LedgerWindow?.ShowLedger(roots);
 
             Messages?.PersistentSubscribe<GameStateChangedMessage>(OnGameStateChanged);
+            Messages?.PersistentSubscribe<GameLoadFinishedMessage>(message => PrepareBodyArt.CheckRan(message, SWLogger));
 
             // Redux builds each toolbar fresh on entering its scene, then raises these
             if (IAppbarBackend.Instance != null)

@@ -18,6 +18,7 @@ namespace KERNEL
         public const string FieldReportHint = "KERNEL/UI/FieldReportHint";
         public const string NoFieldReport = "KERNEL/UI/NoFieldReport";
         public const string Indecipherable = "KERNEL/UI/Indecipherable";
+        public const string PreparingPlanetArt = "KERNEL/Loading/PreparingPlanetArt";
 
         /// <summary>
         /// Translates one of KERNEL's keys, showing the key itself if it's missing (as the game does).
