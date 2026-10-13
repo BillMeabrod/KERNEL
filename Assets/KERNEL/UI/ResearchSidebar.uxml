@@ -53,14 +53,11 @@
                     </Bindings>
                 </ui:Label>
             </ui:VisualElement>
-            <ui:Label text="#KERNEL/UI/PartialFieldReport" class="kernel-report__partial" />
-            <ui:ScrollView name="report-scroll" class="kernel-report__scroll">
-                <ui:Label class="kernel-report__text">
-                    <Bindings>
-                        <ui:DataBinding property="text" data-source-path="ReportText" binding-mode="ToTarget" />
-                    </Bindings>
-                </ui:Label>
-            </ui:ScrollView>
+            <ui:Label class="kernel-report__text">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="ReportText" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

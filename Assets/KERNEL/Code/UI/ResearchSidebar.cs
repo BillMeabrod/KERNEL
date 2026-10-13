@@ -45,7 +45,6 @@ namespace KERNEL.UI
         private VisualElement _panel;
         private ScrollView _list;
         private VisualElement _report;
-        private ScrollView _reportScroll;
         private VisualTreeAsset _biomeRow, _experimentRow;
         private readonly ResearchSidebarViewModel _model = new();
         private Rect _placedAt;
@@ -99,7 +98,6 @@ namespace KERNEL.UI
                 _panel = root.Q("kernel-sidebar");
                 _list = root.Q<ScrollView>("biome-list");
                 _report = root.Q("report");
-                _reportScroll = root.Q<ScrollView>("report-scroll");
                 _dirty = true;
             });
             _window.EnableLocalization();
@@ -163,13 +161,13 @@ namespace KERNEL.UI
         }
 
         /// <summary>
-        /// Whether the pointer is over the biome list or the field report, whose scrolling shouldn't also scroll the page.
+        /// Whether the pointer is over the biome list, whose scrolling shouldn't also scroll the page.
         /// </summary>
         public bool IsPointerOverList(Vector2 screenPoint)
         {
             if (!IsVisible || _list?.panel == null) return false;
             Vector2 point = RuntimePanelUtils.ScreenToPanel(_list.panel, new Vector2(screenPoint.x, Screen.height - screenPoint.y));
-            return _list.worldBound.Contains(point) || (_reportScroll != null && _reportScroll.worldBound.Contains(point));
+            return _list.worldBound.Contains(point);
         }
 
         private void LateUpdate()
@@ -203,7 +201,7 @@ namespace KERNEL.UI
         {
             _dirty = false;
             List<AreaEntry> areas = _body.ShownAreas().ToList();
-            List<LocationEntry> locations = areas.SelectMany(a => a.UnlockedLocations).ToList();
+            List<LocationEntry> locations = areas.SelectMany(a => a.ShownLocations).ToList();
 
             _model.BodyName = _body.DisplayName;
             _model.BiomesExplored = $"{areas.Count(a => a.HasSubmissions)} / {areas.Count}";
@@ -222,7 +220,7 @@ namespace KERNEL.UI
 
         private VisualElement BiomeRow(AreaEntry area)
         {
-            List<LocationEntry> locations = area.UnlockedLocations.ToList();
+            List<LocationEntry> locations = area.ShownLocations.ToList();
             float earned = locations.Sum(l => l.Earned), possible = locations.Sum(l => l.Possible);
             string name = area.IsKnown ? area.DisplayName : Localization.Translate(Localization.UnknownArea);
             string key = $"{_body.BodyName}/{area.Id}";
@@ -274,8 +272,7 @@ namespace KERNEL.UI
                 showSituation ? situation : string.Empty,
                 Tally(location.Earned, location.Possible),
                 location.IsComplete,
-                () => FlavorText(location),
-                location.Possible > 0f ? location.Earned / location.Possible : 0f);
+                () => FlavorText(location));
 
             TemplateContainer row = _experimentRow.Instantiate();
             row.dataSource = model;
@@ -316,32 +313,15 @@ namespace KERNEL.UI
 
             ExperimentRowViewModel row = _hovered ?? _selected;
             bool hasText = row != null && !string.IsNullOrEmpty(row.FlavorText);
-            bool partial = hasText && !row.IsComplete && row.Received < 1f;
 
             _model.ReportExperiment = row?.Name ?? string.Empty;
             _model.ReportPlace = row?.Place ?? string.Empty;
             _model.ReportText = row == null ? Localization.Translate(Localization.FieldReportHint)
                 : !hasText ? Localization.Translate(Localization.NoFieldReport)
-                : partial ? Redact(row.FlavorText, row.Received, row.Key)
                 : row.FlavorText;
 
             _report.EnableInClassList("kernel-report--no-title", row == null);
             _report.EnableInClassList("kernel-report--empty", !hasText);
-            _report.EnableInClassList("kernel-report--partial", partial);
-            _reportScroll.scrollOffset = Vector2.zero;
-        }
-
-        // A partly received report loses one run of words, as long as the share of science still to collect.
-        // Where it falls is picked from the key, so the same report always reads the same.
-        private static string Redact(string text, float received, string key)
-        {
-            string[] words = text.Split(' ');
-            if (words.Length < 2) return text;
-
-            int count = Mathf.Clamp(Mathf.RoundToInt(words.Length * (1f - received)), 1, words.Length - 1);
-            int start = (int)(Hash(key) % (uint)(words.Length - count + 1));
-            string lost = $"<color=#6D7387><noparse>{Localization.Translate(Localization.Indecipherable)}</noparse></color>";
-            return string.Join(" ", words.Take(start).Append(lost).Concat(words.Skip(start + count)));
         }
 
         // FNV-1a, stable across runs (unlike string.GetHashCode)
@@ -352,22 +332,53 @@ namespace KERNEL.UI
             return hash;
         }
 
-        // The text each submitted report (data, then sample) came back with, as the game words it
+        // The text each submitted report came back with. An experiment that gives both a data report (which can be
+        // transmitted) and a sample (which has to be recovered) has a text for each, so they're headed Data and
+        // Sample; one that gives only one kind just shows its text. The game doesn't keep which text a report got,
+        // so this picks the way the game does (this exact location first, then anywhere on the body in the same
+        // situation, then the experiment's default), but steadily rather than at random, and only from the report's
+        // own type: the game falls back to the data texts' default even for a sample
         private static string FlavorText(LocationEntry location)
         {
-            ScienceExperimentsDataStore store = GameManager.Instance?.Game?.ScienceManager?.ScienceExperimentsDataStore;
-            if (store == null) return string.Empty;
+            ExperimentDefinition experiment = GameManager.Instance?.Game?.ScienceManager?.ScienceExperimentsDataStore?
+                .GetExperimentDefinition(location.Experiment.ExperimentID);
+            if (experiment == null) return string.Empty;
 
+            bool bothKinds = location.Data != null && location.Sample != null;
             var texts = new List<string>();
-            foreach ((ReportEntry report, ScienceReportType type) in new[] { (location.Data, ScienceReportType.DataType), (location.Sample, ScienceReportType.SampleType) })
+            foreach ((ReportEntry report, List<FlavorDescription> descriptions, string heading) in new[]
+                     {
+                         (location.Data, experiment.DataFlavorDescriptions, Localization.DataReport),
+                         (location.Sample, experiment.SampleFlavorDescriptions, Localization.SampleReport)
+                     })
             {
                 if (report == null || !report.IsSubmitted) continue;
-                string key = store.GetFlavorText(location.Experiment.ExperimentID, location.Location.ResearchLocationId, type);
+                string key = PickFlavorText(descriptions, location.Location.ResearchLocationId);
                 string text = Localization.Translate(key, string.Empty);
-                if (!string.IsNullOrEmpty(text)) texts.Add(text);
+                if (string.IsNullOrEmpty(text)) continue;
+
+                texts.Add(bothKinds ? $"{ReportHeading(heading)}\n{text}" : text);
             }
 
             return string.Join("\n\n", texts);
+        }
+
+        // A small heading over a report's text, in the sidebar's label colour
+        private static string ReportHeading(string key) =>
+            $"<size=12><color=#BAB4A8><noparse>{Localization.Translate(key).ToUpperInvariant()}</noparse></color></size>";
+
+        private static string PickFlavorText(List<FlavorDescription> descriptions, string locationId)
+        {
+            if (descriptions == null || descriptions.Count == 0) return null;
+
+            // A location ID is body_situation_region; the first two parts are the body and situation
+            string bodyAndSituation = string.Join("_", locationId.Split('_').Take(2));
+            List<FlavorDescription> matches = descriptions.Where(d => d.ResearchLocationID == locationId).ToList();
+            if (matches.Count == 0) matches = descriptions.Where(d => d.ResearchLocationID == bodyAndSituation).ToList();
+            if (matches.Count == 0) matches = descriptions.Where(d => d.ResearchLocationID == "Default").ToList();
+            if (matches.Count == 0) return null;
+
+            return matches[(int)(Hash(locationId) % (uint)matches.Count)].LocalizationTag;
         }
 
         private static string Tally(float earned, float possible) => $"{earned:#,0.#} / {possible:#,0.#}";

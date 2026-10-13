@@ -114,6 +114,18 @@ namespace KERNEL.UI
         {
             _panel = SystemMapPanel.Attach((RectTransform)transform);
             _panel.Ready += OnPanelReady;
+            BodyArt.RingColoursRead += OnRingColoursRead;
+        }
+
+        private void OnDestroy() => BodyArt.RingColoursRead -= OnRingColoursRead;
+
+        // Ring colours are normally read while the save loads; if a shown body's arrive later, its rings were
+        // drawn in the plain colours, so the map is drawn again
+        private void OnRingColoursRead(string body)
+        {
+            if (_content == null || _nodes.All(node => node.Body.BodyName != body)) return;
+            _laidOutShape = null;
+            Build(_roots);
         }
 
         private void OnPanelReady()

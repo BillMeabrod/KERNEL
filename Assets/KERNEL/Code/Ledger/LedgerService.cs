@@ -103,6 +103,12 @@ namespace KERNEL.Ledger
             });
         }
 
+        /// <summary>
+        /// Rebuilds the ledger for something other than a game event (a changed setting): right away while it's
+        /// shown, otherwise when it's next shown.
+        /// </summary>
+        public void Invalidate() => MarkStale(null);
+
         private void MarkStale(MessageCenterMessage message)
         {
             // Nothing to refresh before the first game load

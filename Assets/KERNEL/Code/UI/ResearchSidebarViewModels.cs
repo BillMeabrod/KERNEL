@@ -118,7 +118,7 @@ namespace KERNEL.UI
         private string _flavorText;
 
         public ExperimentRowViewModel(string key, string name, string place, string situation, string tally, bool isComplete,
-            Func<string> flavorText, float received)
+            Func<string> flavorText)
         {
             Key = key;
             Name = name;
@@ -127,7 +127,6 @@ namespace KERNEL.UI
             Tally = tally;
             IsComplete = isComplete;
             _readFlavorText = flavorText;
-            Received = received;
         }
 
         // Which experiment where, so the selected row stays selected when the sidebar refreshes
@@ -135,9 +134,6 @@ namespace KERNEL.UI
 
         // The biome (or orbit, or atmosphere) it's run in, as the field report names it
         public string Place { get; }
-
-        // The share of its science collected (0 to 1): how much of the field report came through
-        public float Received { get; }
 
         [CreateProperty]
         public string Name { get; }

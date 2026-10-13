@@ -33,6 +33,10 @@ namespace KERNEL
         {
             ResearchTab.RegisterPatch(PM);
 
+            // The game gives a mod its own page in the settings menu only if its settings exist when the menu is
+            // set up, which is before OnInitialized
+            KernelSettings.Bind(SWConfiguration);
+
             // Generated planet art reads the bodies' surfaces while a save loads, not when the map opens
             SpaceWarp2.API.Loading.SaveLoad.AddFlowActionToCampaignLoadAfter(new PrepareBodyArt(), PrepareBodyArt.After);
         }
@@ -43,6 +47,9 @@ namespace KERNEL
             Ledger = gameObject.AddComponent<LedgerService>();
             Ledger.Initialize(SWLogger);
             Ledger.Rebuilt += roots => LedgerWindow?.ShowLedger(roots);
+
+            // Showing or hiding spoilers changes what every view of the ledger shows
+            KernelSettings.Changed += Ledger.Invalidate;
 
             Messages?.PersistentSubscribe<GameStateChangedMessage>(OnGameStateChanged);
             Messages?.PersistentSubscribe<GameLoadFinishedMessage>(message => PrepareBodyArt.CheckRan(message, SWLogger));

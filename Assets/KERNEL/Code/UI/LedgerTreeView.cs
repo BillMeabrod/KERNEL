@@ -65,7 +65,7 @@ namespace KERNEL.UI
         {
             // Every body is listed (the tracking station shows them anyway); its own totals exclude its moons
             List<AreaEntry> areas = body.ShownAreas().ToList();
-            Foldout foldout = CreateFoldout(body.BodyName, body.DisplayName, areas.SelectMany(a => a.UnlockedLocations), "kernel-body");
+            Foldout foldout = CreateFoldout(body.BodyName, body.DisplayName, areas.SelectMany(a => a.ShownLocations), "kernel-body");
             AddFoldoutIcon(foldout, body.IsStar ? RowIcon.Star : RowIcon.Planet);
 
             // Orbiting bodies first (a star's planets, a planet's moons), then the body's own areas
@@ -86,7 +86,7 @@ namespace KERNEL.UI
         // arrow and it never opens
         private static VisualElement BuildUnknownArea(AreaEntry area)
         {
-            List<LocationEntry> locations = area.UnlockedLocations.ToList();
+            List<LocationEntry> locations = area.ShownLocations.ToList();
             var foldout = new Foldout { text = Localization.Translate(Localization.UnknownArea), value = false };
             foldout.AddToClassList("kernel-area");
             foldout.AddToClassList("kernel-area--unknown");
@@ -107,7 +107,7 @@ namespace KERNEL.UI
 
         private VisualElement BuildArea(BodyEntry body, AreaEntry area)
         {
-            List<LocationEntry> locations = area.UnlockedLocations.ToList();
+            List<LocationEntry> locations = area.ShownLocations.ToList();
             Foldout foldout = CreateFoldout($"{body.BodyName}/{area.Id}", area.DisplayName, locations, "kernel-area");
             AddFoldoutIcon(foldout, AreaIcon(area));
 

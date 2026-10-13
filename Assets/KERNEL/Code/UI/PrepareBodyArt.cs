@@ -8,14 +8,15 @@ using ILogger = ReduxLib.Logging.ILogger;
 namespace KERNEL.UI
 {
     /// <summary>
-    /// A save-loading step that reads the surfaces the system map's generated art is made from, so the map
-    /// doesn't have to load planet models when it opens. Only bodies without shipped art need it, so with stock
-    /// bodies alone it finishes straight away.
+    /// A save-loading step that reads what the system map's art is made from, so the map doesn't have to load
+    /// planet models when it opens: the surfaces of bodies without shipped art, the light of stars without it, and
+    /// the ring colours of every ringed body (stock Dres included).
     /// </summary>
     internal class PrepareBodyArt : BaseFlowAction
     {
-        // The save-loading step to run after; the game's bodies are all registered by then
-        public const string After = "Initializing Session Data";
+        // The save-loading step to run after: it registers the game's bodies (from their JSON, with any added by
+        // mods), which this step goes through. Any earlier and there are none yet, so nothing gets prepared
+        public const string After = "Loading Celestial Body Data";
 
         // Steps are placed by name, so this stays the same in every language for other mods to run after; the
         // loading bar shows the translated description

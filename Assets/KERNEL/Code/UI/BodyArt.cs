@@ -14,7 +14,8 @@ namespace KERNEL.UI
     /// Pixel art for bodies on the system map. Stock bodies use the art shipped with the mod; any other body gets
     /// art made the same way from its own scaled-space texture: a sphere lit from its star's side, brightened and
     /// reduced to five colours. Stars without art get a pixel sun in the colour of their light. Rings are drawn
-    /// from each body's ring data, as a back and a front half so the body sits between them.
+    /// from each body's ring data, as a back and a front half so the body sits between them, in the colours of
+    /// the body's own ring textures where it has them.
     ///
     /// Reading a body's surface means loading its planet model, so that's done during save loading for every
     /// registered body without shipped art (see <see cref="Preload"/>), and otherwise one body per frame, so
@@ -49,7 +50,15 @@ namespace KERNEL.UI
             new(255, 250, 214, 255), new(255, 232, 150, 255), new(255, 204, 92, 255), new(246, 160, 58, 255), new(214, 112, 40, 255)
         };
 
+        // For rings without a texture of their own
         private static readonly Color32[] RingPalette = { new(222, 200, 158, 255), new(236, 220, 186, 255), new(196, 170, 128, 255) };
+
+        // Each ringed body's rings, inner to outer: the colour of each ring's texture from its inner edge to its
+        // outer edge (null for a ring without one). Read from the body's scaled-space model, once
+        private const int RingProfileLength = 64;
+        private static readonly Dictionary<string, List<Color32[]>> RingProfiles = new();
+        // A ring texture's opacity below which that part of the ring is a gap
+        private const byte RingGapAlpha = 48;
 
         private static readonly Dictionary<string, Sprite> Cache = new();
         private static readonly Dictionary<Sprite, Sprite> Silhouettes = new();
@@ -188,6 +197,13 @@ namespace KERNEL.UI
                     continue;
                 }
 
+                // Ringed bodies' ring colours are read too, shipped art or not (rings are always drawn from data)
+                if (body.Value.data.ringGroupData is { Count: > 0 })
+                {
+                    remaining++;
+                    GetRingProfiles(name, _ => OneDone());
+                }
+
                 bool isStar = GameManager.Instance.Game.CelestialBodies.GetStarStatus(name);
                 Exists(string.Format(ShippedAddress, name), hasShipped =>
                 {
@@ -248,6 +264,62 @@ namespace KERNEL.UI
                 StarLights[star] = light;
                 done(light);
             });
+        }
+
+        /// <summary>
+        /// Raised with a body's name when its ring colours have been read, for anything that drew its rings in the
+        /// plain colours before then.
+        /// </summary>
+        public static event Action<string> RingColoursRead;
+
+        // A ringed body's ring colours, read once and kept. Each ring on the scaled-space model has a texture running
+        // from its inner edge to its outer edge (u across the ring), read here as one row of colours
+        private static void GetRingProfiles(string body, Action<List<Color32[]>> done)
+        {
+            if (RingProfiles.TryGetValue(body, out List<Color32[]> cached))
+            {
+                done(cached);
+                return;
+            }
+
+            ReadScaledPrefab(body, prefab =>
+            {
+                var profiles = new List<Color32[]>();
+                if (prefab == null) return profiles;
+                foreach (CelestialBodyRing ring in prefab.GetComponentsInChildren<CelestialBodyRing>(true).OrderBy(r => r.innerRadius))
+                    profiles.Add(ring.ringTexture != null ? RingProfile(ring.ringTexture) : null);
+                return profiles;
+            }, profiles =>
+            {
+                RingProfiles[body] = profiles ?? new List<Color32[]>();
+                // What was found, so a body drawn in the plain ring colours can be told from one whose own are similar
+                Debug.Log($"[KERNEL] {body} rings: {RingProfiles[body].Count} on its model, " +
+                          $"{RingProfiles[body].Count(p => p != null)} with a texture" +
+                          string.Concat(RingProfiles[body].Where(p => p != null).Select(p => " #" + ColorUtility.ToHtmlStringRGB(AverageColour(p)))));
+                done(RingProfiles[body]);
+                RingColoursRead?.Invoke(body);
+            });
+        }
+
+        // One row of a ring texture's colours, each the average down its column
+        private static Color32[] RingProfile(Texture texture)
+        {
+            const int rows = 4;
+            Color32[] pixels = ReadBack(texture, RingProfileLength, rows);
+            var profile = new Color32[RingProfileLength];
+            for (int x = 0; x < RingProfileLength; x++)
+            {
+                int r = 0, g = 0, b = 0, a = 0;
+                for (int y = 0; y < rows; y++)
+                {
+                    Color32 c = pixels[y * RingProfileLength + x];
+                    r += c.r; g += c.g; b += c.b; a += c.a;
+                }
+
+                profile[x] = new Color32((byte)(r / rows), (byte)(g / rows), (byte)(b / rows), (byte)(a / rows));
+            }
+
+            return profile;
         }
 
         // Loads a body's scaled-space model as a queued job, reads what's needed from it and releases it again;
@@ -337,6 +409,11 @@ namespace KERNEL.UI
             if (Cache.TryGetValue(key + "/rings-back", out Sprite back) && Cache.TryGetValue(key + "/rings-front", out Sprite front))
                 return (back, front, new Vector2(back.texture.width, back.texture.height) * Unit);
 
+            // Normally read while the save loaded; if not, they're read now for next time, and these rings are drawn
+            // in the plain colours without being kept
+            bool hasProfiles = RingProfiles.TryGetValue(body.BodyName, out List<Color32[]> profiles);
+            if (!hasProfiles) GetRingProfiles(body.BodyName, _ => { });
+
             float radius = pixels / 2f;
             List<(float Inner, float Outer)> bands = body.Rings
                 .Select(ring => ((float)(ring.Inner / body.Radius), (float)(ring.Outer / body.Radius))).ToList();
@@ -346,19 +423,39 @@ namespace KERNEL.UI
 
             var backTexture = NewTexture(width, height);
             var frontTexture = NewTexture(width, height);
-            var clear = new Color32[width * height];
-            var backPixels = (Color32[])clear.Clone();
-            var frontPixels = (Color32[])clear.Clone();
+            var colours = new Color32?[width * height];
             float cx = width / 2f, cy = height / 2f;
             for (int y = 0; y < height; y++)
             for (int x = 0; x < width; x++)
             {
                 int band = RingBand(x, y, cx, cy, radius, bands);
                 if (band < 0) continue;
+
+                Color32[] profile = hasProfiles && band < profiles.Count ? profiles[band] : null;
+                if (profile == null)
+                {
+                    colours[y * width + x] = RingPalette[band % RingPalette.Length];
+                    continue;
+                }
+
+                // Where across its ring the pixel is; a ring under three pixels wide is drawn in its average colour,
+                // so it never breaks up or disappears
+                float across = (bands[band].Outer - bands[band].Inner) * radius;
+                Color32? colour = across < 3f ? AverageColour(profile) : ProfileColour(profile, (RingDistance(x, y, cx, cy, radius) - bands[band].Inner) / (bands[band].Outer - bands[band].Inner));
+                if (colour.HasValue) colours[y * width + x] = (Color32)Brighten(colour.Value);
+            }
+
+            // Five colours across all the rings, like the bodies
+            Color32[] palette = FivePalette(colours.Where(c => c.HasValue).Select(c => c.Value).ToList());
+            var backPixels = new Color32[width * height];
+            var frontPixels = new Color32[width * height];
+            for (int i = 0; i < colours.Length; i++)
+            {
+                if (colours[i] == null) continue;
+                Color32 colour = Nearest(palette, colours[i].Value);
                 // Texture rows run bottom up: the lower half passes in front of the body
-                Color32 colour = RingPalette[band % RingPalette.Length];
-                if (y + 0.5f < cy) frontPixels[y * width + x] = colour;
-                else backPixels[y * width + x] = colour;
+                if (i / width + 0.5f < cy) frontPixels[i] = colour;
+                else backPixels[i] = colour;
             }
 
             backTexture.SetPixels32(backPixels);
@@ -367,8 +464,12 @@ namespace KERNEL.UI
             frontTexture.Apply();
             back = ToSprite(backTexture);
             front = ToSprite(frontTexture);
-            Cache[key + "/rings-back"] = back;
-            Cache[key + "/rings-front"] = front;
+            if (hasProfiles)
+            {
+                Cache[key + "/rings-back"] = back;
+                Cache[key + "/rings-front"] = front;
+            }
+
             return (back, front, new Vector2(width, height) * Unit);
         }
 
@@ -392,6 +493,33 @@ namespace KERNEL.UI
             }
 
             return -1;
+        }
+
+        // How far a pixel's centre is from the body's centre, in body radii, on the tipped ring plane
+        private static float RingDistance(int x, int y, float cx, float cy, float radius)
+        {
+            float dx = x + 0.5f - cx, dy = (y + 0.5f - cy) / RingTilt;
+            return Mathf.Sqrt(dx * dx + dy * dy) / radius;
+        }
+
+        // A ring texture's colour at a point across the ring (0 inner edge, 1 outer edge); null where it's a gap
+        private static Color32? ProfileColour(Color32[] profile, float t)
+        {
+            Color32 c = profile[Mathf.Clamp((int)(t * profile.Length), 0, profile.Length - 1)];
+            return c.a < RingGapAlpha ? null : c;
+        }
+
+        // A ring texture's colour overall, weighted by how opaque each part is
+        private static Color32 AverageColour(Color32[] profile)
+        {
+            float r = 0, g = 0, b = 0, weight = 0;
+            foreach (Color32 c in profile)
+            {
+                r += c.r * c.a; g += c.g * c.a; b += c.b * c.a; weight += c.a;
+            }
+
+            if (weight <= 0f) return RingPalette[0];
+            return new Color32((byte)(r / weight), (byte)(g / weight), (byte)(b / weight), 255);
         }
 
         // Keeps a canvas the same odd/even as the disc, so the disc sits on whole pixels in its middle

@@ -12,7 +12,8 @@ namespace KERNEL
         public const string UnknownArea = "KERNEL/UI/UnknownArea";
         public const string FieldReportHint = "KERNEL/UI/FieldReportHint";
         public const string NoFieldReport = "KERNEL/UI/NoFieldReport";
-        public const string Indecipherable = "KERNEL/UI/Indecipherable";
+        public const string DataReport = "KERNEL/UI/DataReport";
+        public const string SampleReport = "KERNEL/UI/SampleReport";
         public const string PreparingPlanetArt = "KERNEL/Loading/PreparingPlanetArt";
 
         /// <summary>
