@@ -610,8 +610,16 @@ namespace KERNEL.UI
             labelRect.sizeDelta = new Vector2(Mathf.Max(size, MinColumnWidth + ColumnGap * 0.5f), LabelHeight);
             labelRect.anchoredPosition = new Vector2(0f, -(HalfHeight(body, size) + LabelGap + LabelHeight / 2f));
 
+            // Hovering lays a white copy of the body's shape over it, which brightens it past what a tint can
+            Image glow = NewImage("Hover Glow", disc.transform, Disc, Color.white);
+            var glowRect = (RectTransform)glow.transform;
+            glowRect.anchorMin = Vector2.zero;
+            glowRect.anchorMax = Vector2.one;
+            glowRect.sizeDelta = Vector2.zero;
+            glow.raycastTarget = false;
+
             BodyNode node = disc.gameObject.AddComponent<BodyNode>();
-            node.Initialize(this, body, disc, ring);
+            node.Initialize(this, body, disc, ring, glow);
             _nodes.Add(node);
 
             BodyArt.Request(body, size, art =>
@@ -913,23 +921,27 @@ namespace KERNEL.UI
         private class BodyNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
         {
             private static readonly Color SelectedRing = Color.white;
-            // Hovering brightens the body, as it does a tech node; the ring is only for the selection
-            private const float HoverBrighten = 0.3f;
+            // Hovering brightens the body, as it does a tech node (the ring is only for the selection): its tint goes
+            // to full and a white copy of its shape shows over it at this opacity
+            private const float HoverGlow = 0.3f;
 
             private SystemMap _map;
-            private Image _body, _ring;
+            private Image _body, _ring, _glow;
+            // The art the glow's shape was made from; it's made on the first hover, not for every body up front
+            private Sprite _glowSource;
             private Color _bodyColour;
             private bool _hovered, _selected;
 
             public BodyEntry Body { get; private set; }
 
-            public void Initialize(SystemMap map, BodyEntry body, Image disc, Image ring)
+            public void Initialize(SystemMap map, BodyEntry body, Image disc, Image ring, Image glow)
             {
                 _map = map;
                 Body = body;
                 _body = disc;
                 _bodyColour = disc.color;
                 _ring = ring;
+                _glow = glow;
                 Refresh();
             }
 
@@ -978,9 +990,22 @@ namespace KERNEL.UI
                 }
                 if (_body != null)
                 {
-                    Color colour = _hovered ? Color.Lerp(_bodyColour, Color.white, HoverBrighten) : _bodyColour;
+                    Color colour = _hovered ? Color.white : _bodyColour;
                     colour.a = _bodyColour.a;
                     _body.color = colour;
+                }
+
+                if (_glow != null)
+                {
+                    if (_hovered && _body != null && _body.sprite != _glowSource)
+                    {
+                        _glowSource = _body.sprite;
+                        // The placeholder circle is already white
+                        _glow.sprite = _glowSource == Disc ? Disc : BodyArt.Silhouette(_glowSource);
+                    }
+
+                    _glow.color = new Color(1f, 1f, 1f, HoverGlow);
+                    _glow.enabled = _hovered;
                 }
             }
         }

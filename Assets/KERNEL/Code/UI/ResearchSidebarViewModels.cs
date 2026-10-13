@@ -114,8 +114,11 @@ namespace KERNEL.UI
     /// </summary>
     internal class ExperimentRowViewModel : ViewModelBase
     {
+        private readonly Func<string> _readFlavorText;
+        private string _flavorText;
+
         public ExperimentRowViewModel(string key, string name, string place, string situation, string tally, bool isComplete,
-            string flavorText, float received)
+            Func<string> flavorText, float received)
         {
             Key = key;
             Name = name;
@@ -123,7 +126,7 @@ namespace KERNEL.UI
             Situation = situation;
             Tally = tally;
             IsComplete = isComplete;
-            FlavorText = flavorText;
+            _readFlavorText = flavorText;
             Received = received;
         }
 
@@ -148,7 +151,8 @@ namespace KERNEL.UI
 
         public bool IsComplete { get; }
 
-        // What its submitted reports said in the field; empty until one is submitted
-        public string FlavorText { get; }
+        // What its submitted reports said in the field; empty until one is submitted. Looked up the first time the
+        // row is hovered or selected, not for every row the sidebar builds
+        public string FlavorText => _flavorText ??= _readFlavorText?.Invoke() ?? string.Empty;
     }
 }

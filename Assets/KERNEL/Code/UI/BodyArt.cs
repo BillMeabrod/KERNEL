@@ -52,6 +52,7 @@ namespace KERNEL.UI
         private static readonly Color32[] RingPalette = { new(222, 200, 158, 255), new(236, 220, 186, 255), new(196, 170, 128, 255) };
 
         private static readonly Dictionary<string, Sprite> Cache = new();
+        private static readonly Dictionary<Sprite, Sprite> Silhouettes = new();
         private static readonly Dictionary<string, List<Action<Sprite>>> Pending = new();
 
         // Each texture body's surface, small and readable, so test or modded bodies sharing one read it once
@@ -133,6 +134,29 @@ namespace KERNEL.UI
                     Enqueue(jobDone => Run(jobDone, () => Finish(ToSprite(Sphere(surface, pixels)))));
                 });
             });
+        }
+
+        /// <summary>
+        /// A white copy of a piece of art's shape (its transparency kept), for brightening it on hover. Made from
+        /// the art's own pixels: generated art is built on the CPU and the shipped art is imported readable, so
+        /// this never has to wait on the GPU.
+        /// </summary>
+        public static Sprite Silhouette(Sprite art)
+        {
+            if (art == null) return null;
+            if (Silhouettes.TryGetValue(art, out Sprite cached)) return cached;
+
+            // Anything not readable (art from elsewhere) is read back through the GPU like a surface texture
+            Texture2D source = art.texture;
+            Color32[] pixels = source.isReadable ? source.GetPixels32() : ReadBack(source, source.width, source.height);
+            for (int i = 0; i < pixels.Length; i++) pixels[i] = new Color32(255, 255, 255, pixels[i].a);
+
+            Texture2D texture = NewTexture(source.width, source.height);
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            Sprite silhouette = ToSprite(texture);
+            Silhouettes[art] = silhouette;
+            return silhouette;
         }
 
         /// <summary>
