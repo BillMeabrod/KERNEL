@@ -2,7 +2,7 @@
 
 **Kerbal Experimental Research & Navigation Electronic Ledger**: a science tracker for [KSP2 Redux](https://github.com/KSP2Redux/Redux).
 
-> 🚧 Pre-release. Works in game, not yet published.
+> 🚧 Pre-release (0.1.0): early, but working. Please report problems on the [issues page](https://github.com/BillMeabrod/KERNEL/issues).
 
 ## What it does
 
