@@ -33,7 +33,7 @@ K.E.R.N.E.L keeps a ledger of every science experiment in your career.
 
 ## Installing
 
-1. Download `KERNEL.zip` from the [latest release](https://github.com/BillMeabrod/KERNEL/releases/latest).
+1. Download `KERNEL.zip` from the [releases page](https://github.com/BillMeabrod/KERNEL/releases).
 2. Extract it into your game's `mods` folder (`Kerbal Space Program 2\mods\`). It contains a `KERNEL` folder, so you end up with `mods\KERNEL\`.
 
 ## Building
