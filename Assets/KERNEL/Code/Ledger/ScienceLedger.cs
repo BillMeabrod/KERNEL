@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using KSP.Game;
 using KSP.Game.Science;
 using KSP.Modules;
@@ -33,12 +32,6 @@ namespace KERNEL.Ledger
             ScienceSitutation.Splashed, ScienceSitutation.Landed
         };
 
-        // Private game state with no public accessor
-        private static readonly FieldInfo BodyRegionsField = typeof(ScienceRegionsDataProvider)
-            .GetField("_cbToScienceRegions", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly FieldInfo TravelFirstsField = typeof(TravelLogManager)
-            .GetField("_firsts", BindingFlags.NonPublic | BindingFlags.Instance);
-
         private readonly ILogger _logger;
 
         public List<BodyEntry> Bodies { get; } = new();
@@ -64,13 +57,15 @@ namespace KERNEL.Ledger
                 return false;
             }
 
-            if (BodyRegionsField?.GetValue(regionsProvider) is not Dictionary<string, CelestialBodyScienceRegionsData> bodyRegions)
+            // The game keeps these private, with no accessor; they're read through the publicized game assembly
+            Dictionary<string, CelestialBodyScienceRegionsData> bodyRegions = regionsProvider._cbToScienceRegions;
+            if (bodyRegions == null)
             {
                 _logger.LogError("Couldn't read the science regions; the game's science data has changed");
                 return false;
             }
 
-            var firsts = TravelFirstsField?.GetValue(game.TravelLogManager) as TravelFirsts;
+            TravelFirsts firsts = game.TravelLogManager?._firsts;
             if (firsts == null)
                 _logger.LogWarning("Couldn't read the travel log; discovery state will be incomplete");
 

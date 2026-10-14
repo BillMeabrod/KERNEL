@@ -2,15 +2,16 @@
 
 **Kerbal Experimental Research & Navigation Electronic Ledger**: a science tracker for [KSP2 Redux](https://github.com/KSP2Redux/Redux).
 
-> 🚧 Early development. Not yet playable.
+> 🚧 Pre-release. Works in game, not yet published.
 
 ## What it does
 
-K.E.R.N.E.L keeps a ledger of every science experiment in your career, all in one window:
+K.E.R.N.E.L keeps a ledger of every science experiment in your career.
 
-- Browse experiments by celestial body and science region
-- See which experiments you've completed and where there's still science to gather
-- Optional spoiler protection for unvisited bodies, undiscovered regions, and experiments you haven't unlocked yet
+- **Ledger window.** Open it from the toolbar in flight or in the VAB to browse experiments by celestial body and science region, and see what you've completed and where there's still science to gather.
+- **R&D page.** A K.E.R.N.E.L tab after the tech tiers slides the tree away to a starfield with a pixel-art map of the solar system. Pick a planet or moon to see its biomes and experiments in the sidebar, and the field report each experiment came back with.
+- **Modded planets.** Bodies added by planet mods appear on the map and in the ledger, with art generated from their own textures, rings from their ring data, and suns tinted by their star's light.
+- **Spoiler protection.** Biomes you haven't visited show as "?????" and experiments you haven't unlocked are hidden. Turn on **Show spoilers** in the game's settings, on the K.E.R.N.E.L page, to see everything.
 
 ## Requirements
 
@@ -22,7 +23,16 @@ K.E.R.N.E.L is a native Redux mod built with the [Redux SDK](https://github.com/
 
 1. Open this folder in **Unity 6000.6** through Unity Hub.
 2. When asked, point the setup at your KSP2 Redux `KSP2_x64.exe`.
-3. Build with ThunderKit's **Rebuild and Launch** pipeline.
+3. Publicize the game's assembly, so the code can read a few of its private fields:
+
+   ```
+   publicize.bat "<KSP2 folder>\KSP2_x64_Data\Managed"
+   ```
+
+   This rewrites the project's local copy of `Assembly-CSharp.dll` (it isn't checked in). Run it again whenever the game is re-imported into the editor.
+4. In the Redux SDK window, tick **KERNEL** and use **Test in Built Game** to build and launch.
+
+To check modded-body support, also tick **KERNELTestPlanets**: a test-only mod of a ringed gas giant, a second star, a planet with biomes, a moon and a sub-moon, made with the SDK's planet tools. Untick it before **Deploy to Zip** so it stays out of the release.
 
 The project started from [Redux.Templates](https://github.com/KSP2Redux/Redux.Templates) `26w41a`.
 

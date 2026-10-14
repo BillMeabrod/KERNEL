@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Reflection;
 using KSP.Game;
 using KSP.Game.Science;
 using KSP.Input;
@@ -31,8 +30,6 @@ namespace KERNEL.UI
         private const string TabName = "TierSelection-KERNEL";
         private const string StarfieldAddress = "KERNEL/starfield.png";
 
-        // Same as the stock scroll between tiers
-        private const float SlideTime = 0.25f;
 
         // The starfield overlaps the last tier background slightly so no hairline shows between them at
         // fractional pixel positions; its edge continues that background, so the overlap doesn't show
@@ -65,6 +62,9 @@ namespace KERNEL.UI
         // Scroll input, in stock scroll units per second
         private float _scrollInput;
         private float _scrollSpeed = 1f;
+
+        // How long a tab click slides for: the stock scroll's time between tiers
+        private float _slideTime = 0.25f;
 
         // A tab click animates to a page instead of following input
         private bool _animating;
@@ -172,9 +172,13 @@ namespace KERNEL.UI
             // Clicking our tab goes to our page; clicking a tier tab turns ours off and the stock scroll takes over
             _tab.onValueChanged.AddListener(selected => AnimateTo(selected ? 1f : 0f));
 
-            // Scroll input at the same speed as the stock tier scroll, alongside the stock handler
-            FieldInfo speed = typeof(RDCenterUIController).GetField("_techTreeInputTravelSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (_controller != null && speed?.GetValue(_controller) is float value) _scrollSpeed = value;
+            // Scroll input at the same speed as the stock tier scroll, alongside the stock handler, and tab clicks
+            // sliding over the stock scroll's time between tiers
+            if (_controller != null)
+            {
+                _scrollSpeed = _controller._techTreeInputTravelSpeed;
+                _slideTime = _controller._scrollToTierTime;
+            }
 
             if (GameManager.Instance.Game.InputManager.TryGetInputDefinition(out _input))
                 _input.BindAction<float>(GameManager.Instance.Game.Input.RD.ScrollTechTree.name, OnScrollInput);
@@ -291,7 +295,7 @@ namespace KERNEL.UI
             if (_animating)
             {
                 _animTime += Time.unscaledDeltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_animTime / SlideTime));
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_animTime / _slideTime));
                 _page = Mathf.Lerp(_animFromPage, _animToPage, t);
                 // Going to our page from an earlier tier carries the tiers to the end on the way
                 if (_animToPage > 0f) _scrollbar.value = Mathf.Lerp(_animFromScroll, 1f, t);
