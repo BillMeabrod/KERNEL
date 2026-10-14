@@ -13,6 +13,20 @@ K.E.R.N.E.L keeps a ledger of every science experiment in your career.
 - **Modded planets.** Bodies added by planet mods appear on the map and in the ledger, with art generated from their own textures, rings from their ring data, and suns tinted by their star's light.
 - **Spoiler protection.** Biomes you haven't visited show as "?????" and experiments you haven't unlocked are hidden. Turn on **Show spoilers** in the game's settings, on the K.E.R.N.E.L page, to see everything.
 
+## Screenshots
+
+![The K.E.R.N.E.L tab in the R&D building: a pixel-art map of the Kerbol system, with Kerbin's biomes and science in the sidebar](Screenshots/RandDMap.png)
+*The R&D page: the whole solar system on one map. Kerbin is selected, so the sidebar lists its biomes and the science gathered in each, with "?????" for biomes not yet visited.*
+
+![A second star system from a planet mod on the R&D map: the star Vexa with the planet Brindle, its moon Pip and Pip's moon Mote](Screenshots/ModdedPlanets.png)
+*Modded planets: a second star gets its own system in the picker along the top, tinted by its light. Its planet, moon and moon of a moon are drawn from their own textures, with their science in the sidebar.*
+
+![The ledger window in flight, open to the Mun's high orbit with both experiments complete](Screenshots/InFlight.png)
+*The ledger window in flight: every body, region and experiment in one tree, with the science gathered out of what's available at each level.*
+
+![The ledger window in the VAB, opened from the K.E.R.N.E.L button on the toolbar](Screenshots/VAB.png)
+*The ledger window in the VAB, opened from its own button on the toolbar, to check what science is left before you build.*
+
 ## Requirements
 
 - Kerbal Space Program 2 with [KSP2 Redux](https://github.com/KSP2Redux/Redux) installed
