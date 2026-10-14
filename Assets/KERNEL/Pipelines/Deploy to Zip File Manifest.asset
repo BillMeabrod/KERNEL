@@ -32,7 +32,7 @@ MonoBehaviour:
   m_Name: TextAssets
   m_EditorClassIdentifier: ksp2community.ksp2unitytools.editor::Ksp2UnityTools.Editor.Modding.Thunderkit.TextAssets
   StagingPaths:
-  - Deploy/KERNEL
+  - Deploy/KERNEL/KERNEL
   possibleFolders:
   - Assets\KERNEL
 --- !u!114 &3725532358985977877
@@ -66,9 +66,9 @@ MonoBehaviour:
   m_Name: AddressablesGroupDatum
   m_EditorClassIdentifier: ksp2community.ksp2unitytools.editor::Ksp2UnityTools.Editor.Modding.Thunderkit.AddressablesGroupDatum
   StagingPaths:
-  - Deploy/KERNEL/addressables
+  - Deploy/KERNEL/KERNEL/addressables
   mod: {fileID: 11400000, guid: bdadf93be5c312c4a9c7cef8dcbf211a, type: 2}
-  targetFolder: Deploy/KERNEL/addressables
+  targetFolder: Deploy/KERNEL/KERNEL/addressables
 --- !u!114 &7476568690018042553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -82,7 +82,7 @@ MonoBehaviour:
   m_Name: AssemblyDefinitions
   m_EditorClassIdentifier: ThunderKit.Core::ThunderKit.Core.Manifests.Datums.AssemblyDefinitions
   StagingPaths:
-  - Deploy/KERNEL
+  - Deploy/KERNEL/KERNEL
   definitions:
   - {fileID: 5897886265953266890, guid: cd668c5c70531f04c8cf6c0eadad64c7, type: 3}
 --- !u!114 &7593432802718337633
@@ -99,4 +99,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: ksp2community.ksp2unitytools.editor::Ksp2UnityTools.Editor.Modding.Thunderkit.CopyFolderDatum
   StagingPaths: []
   sourcePath: Assets\KERNEL/Copied
-  destinationPath: Deploy/KERNEL
+  destinationPath: Deploy/KERNEL/KERNEL
