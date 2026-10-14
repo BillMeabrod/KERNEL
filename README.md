@@ -36,25 +36,6 @@ K.E.R.N.E.L keeps a ledger of every science experiment in your career.
 1. Download `KERNEL.zip` from the [releases page](https://github.com/BillMeabrod/KERNEL/releases).
 2. Extract it into your game's `mods` folder (`Kerbal Space Program 2\mods\`). It contains a `KERNEL` folder, so you end up with `mods\KERNEL\`.
 
-## Building
-
-K.E.R.N.E.L is a native Redux mod built with the [Redux SDK](https://github.com/KSP2Redux/SDK).
-
-1. Open this folder in **Unity 6000.6** through Unity Hub.
-2. When asked, point the setup at your KSP2 Redux `KSP2_x64.exe`.
-3. Publicize the game's assembly, so the code can read a few of its private fields:
-
-   ```
-   publicize.bat "<KSP2 folder>\KSP2_x64_Data\Managed"
-   ```
-
-   This rewrites the project's local copy of `Assembly-CSharp.dll` (it isn't checked in). Run it again whenever the game is re-imported into the editor.
-4. In the Redux SDK window, tick **KERNEL** and use **Test in Built Game** to build and launch.
-
-To check modded-body support, also tick **KERNELTestPlanets**: a test-only mod of a ringed gas giant, a second star, a planet with biomes, a moon and a sub-moon, made with the SDK's planet tools. Untick it before **Deploy to Zip** so it stays out of the release.
-
-The project started from [Redux.Templates](https://github.com/KSP2Redux/Redux.Templates) `26w41a`.
-
 ## Credits
 
 Inspired by [Science Arkive](https://github.com/Kerbalight/ScienceArkive) by leonardfactory. K.E.R.N.E.L is a from-scratch rewrite for Redux, not a port of its code.
