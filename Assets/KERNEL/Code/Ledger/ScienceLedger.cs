@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using KSP.Game;
 using KSP.Game.Science;
 using KSP.Modules;
 using KSP.Sim;
 using KSP.Sim.Definitions;
-using ReduxLib.Logging;
+using SpaceWarp2.API.Logging;
 
 namespace KERNEL.Ledger
 {
@@ -31,6 +32,14 @@ namespace KERNEL.Ledger
             ScienceSitutation.HighOrbit, ScienceSitutation.LowOrbit, ScienceSitutation.Atmosphere,
             ScienceSitutation.Splashed, ScienceSitutation.Landed
         };
+
+        // Private game state with no public accessor. Read by reflection rather than through a publicized game
+        // assembly: Redux keeps the game's code in Ksp2Redux.dll, and publicizing that breaks the Redux SDK's own
+        // editor code (it overrides members whose access publicizing changes)
+        private static readonly FieldInfo BodyRegionsField = typeof(ScienceRegionsDataProvider)
+            .GetField("_cbToScienceRegions", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo TravelFirstsField = typeof(TravelLogManager)
+            .GetField("_firsts", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private readonly ILogger _logger;
 
@@ -57,15 +66,13 @@ namespace KERNEL.Ledger
                 return false;
             }
 
-            // The game keeps these private, with no accessor; they're read through the publicized game assembly
-            Dictionary<string, CelestialBodyScienceRegionsData> bodyRegions = regionsProvider._cbToScienceRegions;
-            if (bodyRegions == null)
+            if (BodyRegionsField?.GetValue(regionsProvider) is not Dictionary<string, CelestialBodyScienceRegionsData> bodyRegions)
             {
                 _logger.LogError("Couldn't read the science regions; the game's science data has changed");
                 return false;
             }
 
-            TravelFirsts firsts = game.TravelLogManager?._firsts;
+            var firsts = TravelFirstsField?.GetValue(game.TravelLogManager) as TravelFirsts;
             if (firsts == null)
                 _logger.LogWarning("Couldn't read the travel log; discovery state will be incomplete");
 

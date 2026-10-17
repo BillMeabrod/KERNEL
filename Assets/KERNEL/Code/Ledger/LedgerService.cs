@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using KSP.Game;
 using KSP.Messages;
 using UnityEngine;
-using ILogger = ReduxLib.Logging.ILogger;
+using ILogger = SpaceWarp2.API.Logging.ILogger;
 
 namespace KERNEL.Ledger
 {

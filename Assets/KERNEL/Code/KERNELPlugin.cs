@@ -4,7 +4,7 @@ using KERNEL.UI;
 using KSP.Game;
 using KSP.Messages;
 using Redux.ExtraModTypes;
-using SpaceWarp2.UI.Backend.UI.Appbar;
+using SpaceWarp2.API.Loading;
 using UitkForKsp2.API;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,6 +18,8 @@ namespace KERNEL
         private const string ToolbarIconAddress = "KERNEL/toolbar.png";
         private const string WindowAddress = "KERNEL/LedgerWindow.uxml";
 
+        private const string LoadWindowStep = "K.E.R.N.E.L: Loading ledger window";
+
         public static KERNELPlugin Instance { get; private set; }
 
         public LedgerWindowController LedgerWindow { get; private set; }
@@ -27,7 +29,12 @@ namespace KERNEL
         // Flight and map view are the same flight, so the window stays open between them
         private static readonly HashSet<GameState> FlightStates = new() { GameState.FlightView, GameState.Map3DView };
 
+        // Where the ledger window can be opened: flight, map view and the VAB
+        private static readonly HashSet<GameState> WindowStates =
+            new() { GameState.FlightView, GameState.Map3DView, GameState.VehicleAssemblyBuilder };
+
         private Sprite _toolbarIcon;
+        private bool _assetsRequested;
 
         public override void OnPreInitialized()
         {
@@ -38,8 +45,16 @@ namespace KERNEL
             // set up, which is before OnInitialized
             KernelSettings.Bind(SWConfiguration);
 
-            // Generated planet art reads the bodies' surfaces while a save loads, not when the map opens
-            SpaceWarp2.API.Loading.SaveLoad.AddFlowActionToCampaignLoadAfter(new PrepareBodyArt(SWLogger), PrepareBodyArt.After);
+            // Generated planet art reads the bodies' surfaces while a save loads, not when the map opens. Redux
+            // only runs the step in campaigns where K.E.R.N.E.L is switched on
+            SaveLoad.AddStepAfter(SWMetadata.Guid, PrepareBodyArt.StepName, StockFlow.CampaignLoad, PrepareBodyArt.After,
+                (resolve, reject) => PrepareBodyArt.Run(resolve, reject, SWLogger));
+
+            // Redux only lets a mod load its own assets in a campaign that has it switched on. Loading them in a
+            // step of the campaign load, rather than OnCampaignLoaded, registers the app bar buttons before the
+            // flight app bar is built
+            SaveLoad.AddStepAfter(SWMetadata.Guid, LoadWindowStep, StockFlow.CampaignLoad, PrepareBodyArt.After,
+                (resolve, reject) => LoadWindow(resolve));
         }
 
         public override void OnInitialized()
@@ -55,21 +70,55 @@ namespace KERNEL
             KernelSettings.Changed += Ledger.Invalidate;
 
             Messages?.PersistentSubscribe<GameStateChangedMessage>(OnGameStateChanged);
-            Messages?.PersistentSubscribe<GameLoadFinishedMessage>(message => PrepareBodyArt.CheckRan(message, SWLogger));
+            Messages?.PersistentSubscribe<GameLoadFinishedMessage>(message => PrepareBodyArt.CheckRan(message, Enabled, SWLogger));
 
-            // Redux builds each toolbar fresh on entering its scene, then raises these
-            if (IAppbarBackend.Instance != null)
+            // The app bar buttons can be turned off; they come and go the next time a toolbar is built
+            KernelSettings.ShowInAppBarChanged += shown =>
             {
-                IAppbarBackend.Instance.AppBarOABSubscriber.AddListener(AddVabButton);
-                IAppbarBackend.Instance.AppBarInFlightSubscriber.AddListener(AddFlightButton);
-            }
-            else
+                if (shown) RegisterAppBarButtons();
+                else AppBarButtons.Unregister();
+            };
+        }
+
+        // Loaded once, by the first campaign with K.E.R.N.E.L switched on; both stay for later campaigns
+        private void LoadWindow(System.Action done)
+        {
+            if (_assetsRequested)
             {
-                SWLogger.LogError("App bar backend isn't available; the toolbar buttons won't be shown");
+                done();
+                return;
             }
 
-            Assets.Load<VisualTreeAsset>(WindowAddress, CreateWindow);
-            Assets.Load<Texture2D>(ToolbarIconAddress, texture => _toolbarIcon = CreateIcon(texture, ToolbarIconAddress));
+            _assetsRequested = true;
+            int pending = 2;
+            void Loaded()
+            {
+                if (--pending == 0) done();
+            }
+
+            Assets.Load<VisualTreeAsset>(WindowAddress, uxml =>
+            {
+                CreateWindow(uxml);
+                Loaded();
+            });
+            Assets.Load<Texture2D>(ToolbarIconAddress, texture =>
+            {
+                _toolbarIcon = CreateIcon(texture, ToolbarIconAddress);
+                RegisterAppBarButtons();
+                Loaded();
+            });
+        }
+
+        // The next campaign may have K.E.R.N.E.L switched off. Redux's app bar hides the buttons itself there
+        public override void OnCampaignUnloading()
+        {
+            LedgerWindow?.SetOpen(false);
+        }
+
+        private void RegisterAppBarButtons()
+        {
+            if (_toolbarIcon != null && KernelSettings.ShowInAppBar)
+                AppBarButtons.Register(SWMetadata.Guid, _toolbarIcon, SetWindowOpen);
         }
 
         private void OnGameStateChanged(MessageCenterMessage message)
@@ -82,18 +131,14 @@ namespace KERNEL
             }
         }
 
-        private void AddVabButton()
-        {
-            if (_toolbarIcon != null) ToolbarButtons.AddToVab(_toolbarIcon, SetWindowOpen, SWLogger);
-        }
-
-        private void AddFlightButton()
-        {
-            if (_toolbarIcon != null) ToolbarButtons.AddToFlight(_toolbarIcon, SetWindowOpen, SWLogger);
-        }
-
         private void Update()
         {
+            // The keyboard shortcut opens and closes the window wherever it can be shown, as Redux's own windows
+            // read theirs
+            if (LedgerWindow != null && Enabled && KernelSettings.ToggleWindow.Down && Game?.GlobalGameState != null
+                && WindowStates.Contains(Game.GlobalGameState.GetState()))
+                SetWindowOpen(!LedgerWindow.IsOpen);
+
             // Like Redux's tracking station panel, get out of the way as soon as the loading curtain starts
             // closing; the scene change itself is only announced once loading is done
             if (LedgerWindow != null && LedgerWindow.IsOpen && Game != null && Game.UI != null && Game.UI.GetCurtainVisibility())

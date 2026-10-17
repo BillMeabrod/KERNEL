@@ -1,5 +1,7 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using KSP.Game;
 using KSP.Game.Science;
 using KSP.Input;
@@ -14,8 +16,9 @@ namespace KERNEL.UI
 {
     /// <summary>
     /// K.E.R.N.E.L's tab on the R&D screen, after the tech tier tabs. A prefab patch adds a starfield past the end
-    /// of the tier backgrounds with this component on it, so everything is created and destroyed with the screen. The tier tabs themselves are only created when the screen starts, so ours is
-    /// a copy of one of them, in the same toggle group: it looks, sounds and switches like the stock tabs.
+    /// of the tier backgrounds with this component on it, so everything is created and destroyed with the screen.
+    /// Redux builds the tier tabs from the tech tree at run time, so ours is a copy of one of them, in the same
+    /// toggle group: it looks, sounds and switches like the stock tabs, and rejoins the row when Redux rebuilds it.
     ///
     /// Our page is one more step past the last tier. The stock scroll still runs the tiers; past the last one
     /// this component carries the tech tree and the backgrounds on out to the starfield, by a position that
@@ -35,6 +38,9 @@ namespace KERNEL.UI
         // fractional pixel positions; its edge continues that background, so the overlap doesn't show
         private const float StarfieldOverlap = 2f;
 
+        // Space around a tab's title, as Redux sizes the tier tabs
+        private const float TabMargin = 48f;
+
         // Set by the prefab patch. Only stock objects are referenced: Patch Manager loses a patch's own ID when it
         // reuses a cached plan, so references to objects the patch added itself fail on later runs
         [SerializeField] private RDCenterUIController _controller;
@@ -50,8 +56,14 @@ namespace KERNEL.UI
         // Whether this page has told the ledger it's showing it
         private bool _showingLedger;
         private RectTransform _starfieldRect;
+        private RawImage _starfield;
         private RDInputDefinition _input;
         private int _tiers;
+        private readonly List<ToggleExtended> _tierTabs = new();
+
+        // The tab row's child count when ours last joined it, and the row width we last gave it
+        private int _syncedChildren = -1;
+        private float _barWidthWritten = float.NaN;
 
         // The scrollbar track is split into one section per tier plus ours; the stock handle keeps to the tiers'
         private float _tierShare = 1f;
@@ -79,11 +91,8 @@ namespace KERNEL.UI
         // Made once, so the per-frame slide allocates nothing
         private Func<float, float> _backgroundEnd, _treeEnd;
 
-        // How far right of the tier backgrounds' position their end is. Measuring it walks every tier background,
-        // so it's kept until the screen's size or the number of tiers changes.
+        // How far right of the tier backgrounds' position their end is, as last read
         private float _backgroundEndOffset;
-        private Vector2 _measuredScreen = new(-1f, -1f);
-        private int _measuredTiers = -1;
 
         /// <summary>
         /// Registers the R&D screen patch. Patch Manager only accepts prefab patches before the game starts
@@ -130,6 +139,9 @@ namespace KERNEL.UI
 
         }
 
+        private static FieldInfo ControllerField(string name) =>
+            typeof(RDCenterUIController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+
         private static PrefabPatchObjectReference Target(PrefabPatchObjectTarget target) =>
             PrefabPatchBuilder.TargetReference(target);
 
@@ -142,42 +154,35 @@ namespace KERNEL.UI
             _treeEnd = TreeEndX;
             if (_background != null) _starfieldRect.SetSiblingIndex(_background.GetSiblingIndex() + 1);
 
+            // Hidden until it's placed past the last tier, which needs the tiers to exist
+            _starfield = GetComponent<RawImage>();
+            if (_starfield != null) _starfield.enabled = false;
+
             if (_scrollbar != null && _scrollbar.TryGetComponent(out ResearchScrollbar scrollbar)) scrollbar.Tab = this;
         }
 
-        private IEnumerator Start()
+        private void Start()
         {
-            // The R&D controller creates the tier tabs in its own Start; they exist from the next frame
-            yield return null;
-
-            if (_tabBar == null) yield break;
-            ToggleExtended[] tierTabs = _tabBar.GetComponentsInChildren<ToggleExtended>();
-            if (tierTabs.Length == 0) yield break;
-
-            _tiers = tierTabs.Length;
-            _tierShare = _tiers / (_tiers + 1f);
-            _lastTier = tierTabs[_tiers - 1];
-
-            // Copy a tab that isn't selected: a selected copy would take the selection from it on joining the group
-            ToggleExtended template = Array.Find(tierTabs, tier => !tier.isOn) ?? _lastTier;
-            _tab = Instantiate(template, _tabBar);
-            _tab.name = TabName;
-            _tab.transform.SetAsLastSibling();
-            _tab.SetIsOnWithoutNotify(false);
-
-            string title = Localization.Translate(Localization.Title);
-            foreach (TextMeshProUGUI text in _tab.GetComponentsInChildren<TextMeshProUGUI>(true))
-                text.text = title;
-
-            // Clicking our tab goes to our page; clicking a tier tab turns ours off and the stock scroll takes over
-            _tab.onValueChanged.AddListener(selected => AnimateTo(selected ? 1f : 0f));
+            // The tab leans on how Redux builds this screen, which has no way for mods to add a page. If an update
+            // moves what it hooks into, the page stays hidden and says why
+            string missing = string.Join(", ", new (string name, UnityEngine.Object found)[]
+                {
+                    (nameof(_controller), _controller), (nameof(_tabBar), _tabBar), (nameof(_background), _background),
+                    (nameof(_treeContent), _treeContent), (nameof(_scrollbar), _scrollbar), (nameof(_scrollArea), _scrollArea)
+                }.Where(part => part.found == null).Select(part => part.name));
+            if (missing.Length > 0)
+            {
+                KERNELPlugin.Instance?.SWLogger.LogWarning($"The R&D page is hidden: the R&D screen has changed ({missing} not found)");
+                return;
+            }
 
             // Scroll input at the same speed as the stock tier scroll, alongside the stock handler, and tab clicks
-            // sliding over the stock scroll's time between tiers
+            // sliding over the stock scroll's time between tiers. Both are private, so they're read by reflection
+            // (see ScienceLedger); if a game update renames them, the defaults above stand
             if (_controller != null)
             {
-                _scrollSpeed = _controller._techTreeInputTravelSpeed;
-                _slideTime = _controller._scrollToTierTime;
+                if (ControllerField("_techTreeInputTravelSpeed")?.GetValue(_controller) is float speed) _scrollSpeed = speed;
+                if (ControllerField("_scrollToTierTime")?.GetValue(_controller) is float slide) _slideTime = slide;
             }
 
             if (GameManager.Instance.Game.InputManager.TryGetInputDefinition(out _input))
@@ -186,6 +191,93 @@ namespace KERNEL.UI
             // The sidebar shows the body picked on the map while our page shows
             var map = _treeContent.parent.GetComponentInChildren<SystemMap>(true);
             if (_controller != null) _sidebar = ResearchSidebar.Attach(_controller, map);
+        }
+
+        // Redux builds the tier tabs from the tech tree, and builds them again whenever the tree changes, appending
+        // the new ones after ours. Ours joins them, or goes back to the end, whenever the row changes. False while
+        // there are no tiers yet.
+        private bool SyncTab()
+        {
+            if (_tab != null && _tabBar.childCount == _syncedChildren) return true;
+
+            _tierTabs.Clear();
+            foreach (Transform child in _tabBar)
+            {
+                // Tiers being cleared are switched off before they're destroyed at the end of the frame
+                if (child.gameObject.activeSelf && (_tab == null || child != _tab.transform)
+                    && child.TryGetComponent(out ToggleExtended tier))
+                    _tierTabs.Add(tier);
+            }
+            if (_tierTabs.Count == 0) return false;
+
+            _tiers = _tierTabs.Count;
+            _tierShare = _tiers / (_tiers + 1f);
+            _lastTier = _tierTabs[_tiers - 1];
+            if (_tab == null) CreateTab();
+            _tab.transform.SetAsLastSibling();
+            _syncedChildren = _tabBar.childCount;
+            _barWidthWritten = float.NaN;
+            return true;
+        }
+
+        private void CreateTab()
+        {
+            // Copy a tab that isn't selected: a selected copy would take the selection from it on joining the group
+            ToggleExtended template = _tierTabs.Find(tier => !tier.isOn) ?? _lastTier;
+            _tab = Instantiate(template, _tabBar);
+            _tab.name = TabName;
+            _tab.SetIsOnWithoutNotify(false);
+
+            string title = Localization.Translate(Localization.Title);
+            float textWidth = 0f;
+            foreach (TextMeshProUGUI text in _tab.GetComponentsInChildren<TextMeshProUGUI>(true))
+            {
+                text.text = title;
+                textWidth = Mathf.Max(textWidth, text.GetPreferredValues(title).x);
+            }
+
+            // Sized for its own title, with the margin Redux gives the tier tabs
+            if (!_tab.TryGetComponent(out LayoutElement layout)) layout = _tab.gameObject.AddComponent<LayoutElement>();
+            layout.minWidth = layout.preferredWidth = textWidth + TabMargin;
+            layout.flexibleWidth = 1f;
+
+            // Clicking our tab goes to our page; clicking a tier tab turns ours off and the stock scroll takes over
+            _tab.onValueChanged.AddListener(selected =>
+            {
+                AnimateTo(selected ? 1f : 0f);
+                if (selected) ScrollTabIntoView();
+            });
+        }
+
+        // Redux sizes the tab row to fit its own tabs only, which would leave ours cut off past the end of the row.
+        // Each time it sizes the row, ours is added in.
+        private void FitTabBar()
+        {
+            if (Mathf.Approximately(_tabBar.sizeDelta.x, _barWidthWritten) || !(_tabBar.parent is RectTransform viewport))
+                return;
+
+            float width = 0f;
+            int tabs = 0;
+            foreach (Transform child in _tabBar)
+            {
+                if (!child.gameObject.activeSelf || !child.TryGetComponent(out LayoutElement layout)) continue;
+                width += layout.preferredWidth;
+                tabs++;
+            }
+            if (_tabBar.TryGetComponent(out HorizontalLayoutGroup group))
+                width += group.padding.horizontal + group.spacing * Mathf.Max(0, tabs - 1);
+
+            _barWidthWritten = Mathf.Max(viewport.rect.width, width);
+            _tabBar.sizeDelta = new Vector2(_barWidthWritten, _tabBar.sizeDelta.y);
+        }
+
+        // The tab row scrolls when it's wider than the screen; ours is at its end
+        private void ScrollTabIntoView()
+        {
+            if (!(_tabBar.parent is RectTransform viewport)) return;
+            if (viewport.TryGetComponent(out ScrollRect scroll)) scroll.StopMovement();
+            float end = Mathf.Max(0f, _tabBar.rect.width - viewport.rect.width);
+            _tabBar.anchoredPosition = new Vector2(-end, _tabBar.anchoredPosition.y);
         }
 
         private void OnDestroy()
@@ -289,8 +381,15 @@ namespace KERNEL.UI
         // After the stock scroll has positioned the tree and backgrounds for this frame
         private void LateUpdate()
         {
-            if (_tab == null || _scrollbar == null || _background == null || _treeContent == null || _starfieldRect == null)
+            if (_tabBar == null || _scrollbar == null || _background == null || _treeContent == null || _starfieldRect == null)
                 return;
+
+            if (!SyncTab())
+            {
+                if (_starfield != null && _starfield.enabled) _starfield.enabled = false;
+                return;
+            }
+            FitTabBar();
 
             if (_animating)
             {
@@ -315,7 +414,11 @@ namespace KERNEL.UI
             // Select whichever of the last tier and our page is nearer, as the stock scroll does for tiers
             if (!_animating && _scrollbar.value >= 0.999f)
             {
-                if (_page >= 0.5f && !_tab.isOn) _tab.SetIsOnWithoutNotify(true);
+                if (_page >= 0.5f && !_tab.isOn)
+                {
+                    _tab.SetIsOnWithoutNotify(true);
+                    ScrollTabIntoView();
+                }
                 else if (_page < 0.5f && _tab.isOn && _lastTier != null) _lastTier.SetIsOnWithoutNotify(true);
             }
 
@@ -332,6 +435,7 @@ namespace KERNEL.UI
             float starfieldX = BackgroundEndX(_background.anchoredPosition.x) - StarfieldOverlap;
             if (!Mathf.Approximately(position.x, starfieldX))
                 _starfieldRect.anchoredPosition = new Vector2(starfieldX, position.y);
+            if (_starfield != null && !_starfield.enabled) _starfield.enabled = true;
 
             // The stock handle travels the tiers' share of the track, which moves over to end in ours
             if (_scrollArea != null)
@@ -345,21 +449,30 @@ namespace KERNEL.UI
             }
         }
 
-        // Where the right end of the tier backgrounds is, from the screen's left edge, with the strip at x
+        // Where the right end of the tier backgrounds is, from the screen's left edge, with the strip at x. Redux
+        // builds and sizes the tier backgrounds as the screen runs, so it's read from the last one each time
         private float BackgroundEndX(float x)
         {
-            var screen = (RectTransform)_background.parent;
-            Vector2 screenSize = screen.rect.size;
-            if (screenSize != _measuredScreen || _background.childCount != _measuredTiers)
+            RectTransform last = LastTierBackground();
+            if (last != null)
             {
-                _measuredScreen = screenSize;
-                _measuredTiers = _background.childCount;
-                Bounds strip = RectTransformUtility.CalculateRelativeRectTransformBounds(_background);
-                Vector3 end = screen.InverseTransformPoint(_background.TransformPoint(new Vector3(strip.max.x, 0f, 0f)));
+                var screen = (RectTransform)_background.parent;
+                Vector3 end = screen.InverseTransformPoint(last.TransformPoint(new Vector3(last.rect.xMax, 0f, 0f)));
                 _backgroundEndOffset = end.x - screen.rect.xMin - _background.anchoredPosition.x;
             }
 
             return x + _backgroundEndOffset;
+        }
+
+        // The last tier background still in use: those being cleared are switched off before they're destroyed
+        private RectTransform LastTierBackground()
+        {
+            for (int i = _background.childCount - 1; i >= 0; i--)
+            {
+                Transform child = _background.GetChild(i);
+                if (child.gameObject.activeSelf) return child as RectTransform;
+            }
+            return null;
         }
 
         // Where the right end of the tech tree is, from the left edge of its view, with the tree at x

@@ -56,7 +56,7 @@ namespace KERNEL.UI
 
         public void SetOpen(bool open)
         {
-            // The toolbar buttons call back into here when we update them below
+            // The app bar buttons call back into here when we update them below
             if (open == IsOpen) return;
             IsOpen = open;
             OpenChanged?.Invoke(open);
@@ -64,7 +64,7 @@ namespace KERNEL.UI
             if (open) _renderer.Show();
             else _renderer.Hide();
 
-            ToolbarButtons.SetPressed(open);
+            AppBarButtons.SetPressed(open);
         }
     }
 }
