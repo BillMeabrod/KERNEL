@@ -1,10 +1,10 @@
-using ReduxLib.GameInterfaces;
+using I2.Loc;
 
 namespace KERNEL
 {
     /// <summary>
     /// Text shown to the player. KERNEL's own strings live in Copied/localizations/kernel_localization.csv,
-    /// which SpaceWarp loads into the game's localization at startup. Looked up through Redux's localizer.
+    /// which SpaceWarp loads into the game's localization at startup.
     /// </summary>
     public static class Localization
     {
@@ -24,7 +24,7 @@ namespace KERNEL
         public static string Translate(string key, string fallback)
         {
             if (string.IsNullOrEmpty(key)) return fallback;
-            string text = ILocalizer.Instance?.GetTranslation(key);
+            string text = LocalizationManager.GetTranslation(key);
             return string.IsNullOrEmpty(text) ? fallback : text;
         }
     }

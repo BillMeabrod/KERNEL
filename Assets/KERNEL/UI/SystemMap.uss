@@ -35,7 +35,7 @@
 .kernel-map__title {
     position: absolute;
     left: 60px;
-    top: 30px;
+    top: 46px;
     height: 44px;
     font-size: 26px;
     color: rgb(255, 255, 255);
@@ -47,7 +47,7 @@
 .kernel-map__picker {
     position: absolute;
     left: 60px;
-    top: 74px;
+    top: 90px;
     height: 36px;
     flex-direction: row;
 }

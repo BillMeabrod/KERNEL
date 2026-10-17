@@ -1,5 +1,7 @@
 using System;
-using ReduxLib.Configuration;
+using SpaceWarp2.API.Configuration;
+using SpaceWarp2.API.Input;
+using UnityEngine;
 
 namespace KERNEL
 {
@@ -12,8 +14,11 @@ namespace KERNEL
     public static class KernelSettings
     {
         private const string SpoilersSection = "Spoilers";
+        private const string WindowSection = "Ledger Window";
 
         private static ConfigValue<bool> _showSpoilers;
+        private static ConfigValue<bool> _showInAppBar;
+        private static ConfigValue<KeyboardShortcut> _toggleWindow;
 
         /// <summary>
         /// Whether the ledger shows biomes not yet visited by name (instead of "?????") and lists experiments
@@ -22,9 +27,28 @@ namespace KERNEL
         public static bool ShowSpoilers => _showSpoilers?.Value ?? false;
 
         /// <summary>
+        /// Whether K.E.R.N.E.L has buttons in Redux's app tray in flight and the VAB. On by default; with it off, the
+        /// window is opened with <see cref="ToggleWindow"/>.
+        /// </summary>
+        public static bool ShowInAppBar => _showInAppBar?.Value ?? true;
+
+        /// <summary>
+        /// Opens and closes the ledger window in flight, map view and the VAB. Left Alt+K by default, rebindable
+        /// on the settings page.
+        /// </summary>
+        public static KeyboardShortcut ToggleWindow => _toggleWindow?.Value ?? DefaultToggleWindow;
+
+        private static readonly KeyboardShortcut DefaultToggleWindow = new(KeyCode.K, KeyCode.LeftAlt);
+
+        /// <summary>
         /// Raised when a setting that changes what the ledger shows is changed.
         /// </summary>
         public static event Action Changed;
+
+        /// <summary>
+        /// Raised when "Show in app tray" is changed.
+        /// </summary>
+        public static event Action<bool> ShowInAppBarChanged;
 
         public static void Bind(IConfigFile config)
         {
@@ -35,6 +59,15 @@ namespace KERNEL
                 "Show biomes you haven't visited by name, and list experiments you haven't unlocked yet.", null,
                 "KERNEL/Settings/ShowSpoilers", "KERNEL/Settings/Description/ShowSpoilers"));
             _showSpoilers.RegisterCallback((_, _) => Changed?.Invoke());
+
+            IConfigSection window = config.GetOrCreateSection(WindowSection, "KERNEL/Settings/LedgerWindow");
+            _showInAppBar = new ConfigValue<bool>(window.BindEntry("Show In App Bar", true,
+                "Show K.E.R.N.E.L's button in the app tray in flight and the VAB.", null,
+                "KERNEL/Settings/ShowInAppBar", "KERNEL/Settings/Description/ShowInAppBar"));
+            _showInAppBar.RegisterCallback((_, shown) => ShowInAppBarChanged?.Invoke(shown));
+            _toggleWindow = new ConfigValue<KeyboardShortcut>(window.BindEntry("Toggle Window", DefaultToggleWindow,
+                "Opens and closes the ledger window in flight and the VAB.", null,
+                "KERNEL/Settings/ToggleWindow", "KERNEL/Settings/Description/ToggleWindow"));
         }
     }
 }

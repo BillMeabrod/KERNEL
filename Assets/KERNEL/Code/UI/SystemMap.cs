@@ -19,6 +19,9 @@ namespace KERNEL.UI
     /// adds to the tree's view, which it keeps just after the end of the tree as the tree scrolls and slides; the
     /// window's page follows that rect.
     /// </summary>
+    // Runs after ResearchTab has slid the tree for the frame; before it, the map would find the tree where the stock
+    // scroll left it, off our page, and hide itself for that frame
+    [DefaultExecutionOrder(100)]
     public class SystemMap : MonoBehaviour
     {
         // Layout, in canvas units
@@ -43,7 +46,7 @@ namespace KERNEL.UI
         // How far right moons of moons sit from the moon they orbit
         private const float SubIndent = 56f;
         // The page title (the full name) and, with more than one star, the system picker take this much of the top
-        private const float TitleHeight = 44f;
+        private const float TitleHeight = 60f;
         private const float PickerHeight = 44f;
         // Selected when the page first opens
         private const string HomeBody = "Kerbin";

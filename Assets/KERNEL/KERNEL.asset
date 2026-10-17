@@ -16,7 +16,7 @@ MonoBehaviour:
   name: K.E.R.N.E.L
   author: Bill Meabrod
   description: 'Kerbal Experimental Research & Navigation Electronic Ledger: track every science experiment by body and region, and see where science is left to gather.'
-  version: 0.1.0
+  version: 0.2.0
   versionCheck: https://raw.githubusercontent.com/BillMeabrod/KERNEL/main/Assets/KERNEL/swinfo.json
   minKsp2Version: '*'
   maxKsp2Version: '*'
@@ -34,3 +34,10 @@ MonoBehaviour:
     min: 2.0.0
     max: '*'
   incompatibilities: []
+  ownFeature:
+    id: 
+    recommended: 0
+    requires: []
+    conflicts: []
+    provides: []
+  features: []

@@ -6,7 +6,7 @@ using KSP.Game;
 using KSP.Rendering;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using ILogger = ReduxLib.Logging.ILogger;
+using ILogger = SpaceWarp2.API.Logging.ILogger;
 using Object = UnityEngine.Object;
 
 namespace KERNEL.UI
@@ -39,7 +39,9 @@ namespace KERNEL.UI
 
         private const string ShippedAddress = "KERNEL/Bodies/{0}.png";
         private const string ScaledPrefabAddress = "Celestial.{0}.Scaled.prefab";
-        private const string SurfaceTextureProperty = "_MainTex";
+        // Where a scaled-space material keeps its surface colours: the game's planet shader, then the names URP and
+        // other lit shaders use
+        private static readonly string[] SurfaceTextureProperties = { "_MainTex", "_BaseMap", "_BaseColorMap", "_AlbedoMap" };
 
         // Light from the left, where the star sits on the map
         private static readonly Vector3 Light = new Vector3(-0.62f, 0.35f, 0.70f).normalized;
@@ -241,8 +243,20 @@ namespace KERNEL.UI
 
             ReadScaledPrefab(textureBody, prefab =>
             {
+                if (prefab == null)
+                {
+                    Logger?.LogWarning($"No art for {textureBody}: it has no scaled-space model");
+                    return null;
+                }
+
                 Texture texture = SurfaceTexture(prefab);
-                return texture != null ? ReadBack(texture, SurfaceWidth, SurfaceHeight) : null;
+                if (texture == null)
+                {
+                    Logger?.LogWarning($"No art for {textureBody}: no surface texture on its scaled-space model ({MaterialSummary(prefab)})");
+                    return null;
+                }
+
+                return ReadBack(texture, SurfaceWidth, SurfaceHeight);
             }, Finish);
         }
 
@@ -545,10 +559,26 @@ namespace KERNEL.UI
             if (prefab == null) return null;
             foreach (Renderer renderer in prefab.GetComponentsInChildren<Renderer>(true))
             foreach (Material material in renderer.sharedMaterials)
-                if (material != null && material.HasProperty(SurfaceTextureProperty) && material.GetTexture(SurfaceTextureProperty) is Texture2D texture)
-                    return texture;
+            {
+                if (material == null) continue;
+                // Read from the material's own textures: a modded body's shader may not be the game's yet when
+                // its model has just loaded, and then the shader has none of these, though the material keeps them
+                string[] saved = material.GetTexturePropertyNames();
+                foreach (string property in SurfaceTextureProperties)
+                    if (Array.IndexOf(saved, property) >= 0 && material.GetTexture(property) is Texture2D texture)
+                        return texture;
+            }
             return null;
         }
+
+        // The shaders and texture slots on a model, for a warning when no surface texture is found on it
+        private static string MaterialSummary(GameObject prefab) => string.Join("; ",
+            prefab.GetComponentsInChildren<Renderer>(true)
+                .SelectMany(renderer => renderer.sharedMaterials)
+                .Where(material => material != null)
+                .Select(material => $"{material.shader?.name}: " + string.Join(", ",
+                    material.GetTexturePropertyNames().Select(property =>
+                        $"{property}={(material.GetTexture(property) is Texture texture ? $"{texture.GetType().Name} {texture.width}x{texture.height}" : "empty")}"))));
 
         // A lit sphere from an equirectangular surface map, brightened and reduced to five colours
         private static Texture2D Sphere(Color32[] map, int pixels)
