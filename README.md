@@ -8,7 +8,7 @@
 
 K.E.R.N.E.L keeps a ledger of every science experiment in your career.
 
-- **Ledger window.** Open it from the toolbar in flight or in the VAB to browse experiments by celestial body and science region, and see what you've completed and where there's still science to gather.
+- **Ledger window.** Open it from Redux's app tray in flight or in the VAB, or with **Left Alt+K**, to browse experiments by celestial body and science region, and see what you've completed and where there's still science to gather.
 - **R&D page.** A K.E.R.N.E.L tab after the tech tiers slides the tree away to a starfield with a pixel-art map of the solar system. Pick a planet or moon to see its biomes and experiments in the sidebar, and the field report each experiment came back with.
 - **Modded planets.** Bodies added by planet mods appear on the map and in the ledger, with art generated from their own textures, rings from their ring data, and suns tinted by their star's light.
 - **Spoiler protection.** Biomes you haven't visited show as "?????" and experiments you haven't unlocked are hidden. Turn on **Show spoilers** in the game's settings, on the K.E.R.N.E.L page, to see everything.
@@ -24,12 +24,12 @@ K.E.R.N.E.L keeps a ledger of every science experiment in your career.
 ![The ledger window in flight, open to the Mun's high orbit with both experiments complete](Screenshots/InFlight.png)
 *The ledger window in flight: every body, region and experiment in one tree, with the science gathered out of what's available at each level.*
 
-![The ledger window in the VAB, opened from the K.E.R.N.E.L button on the toolbar](Screenshots/VAB.png)
-*The ledger window in the VAB, opened from its own button on the toolbar, to check what science is left before you build.*
+![The ledger window in the VAB](Screenshots/VAB.png)
+*The ledger window in the VAB, to check what science is left before you build.*
 
 ## Requirements
 
-- Kerbal Space Program 2 with [KSP2 Redux](https://github.com/KSP2Redux/Redux) installed
+- Kerbal Space Program 2 with [KSP2 Redux](https://github.com/KSP2Redux/Redux) 26w42b or newer installed (for Redux 26w41a, use K.E.R.N.E.L [0.1.0](https://github.com/BillMeabrod/KERNEL/releases/tag/v0.1.0))
 
 ## Installing
 
