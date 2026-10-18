@@ -21,6 +21,9 @@ namespace KERNEL.UI
     /// Reading a body's surface means loading its planet model, so that's done during save loading for every
     /// registered body without shipped art (see <see cref="Preload"/>), and otherwise one body per frame, so
     /// opening the map never stalls the game.
+    ///
+    /// The art belongs to one campaign, since modded bodies can differ between campaigns: it's set aside as the
+    /// campaign unloads (<see cref="EndCampaign"/>) and freed once the next is loading (<see cref="FreeRetired"/>).
     /// </summary>
     internal static class BodyArt
     {
@@ -57,7 +60,7 @@ namespace KERNEL.UI
         private static readonly Color32[] RingPalette = { new(222, 200, 158, 255), new(236, 220, 186, 255), new(196, 170, 128, 255) };
 
         // Each ringed body's rings, inner to outer: the colour of each ring's texture from its inner edge to its
-        // outer edge (null for a ring without one). Read from the body's scaled-space model, once
+        // outer edge (null for a ring without one). Read from the body's scaled-space model, once a campaign
         private const int RingProfileLength = 64;
         private static readonly Dictionary<string, List<Color32[]>> RingProfiles = new();
         // A ring texture's opacity below which that part of the ring is a gap
@@ -77,6 +80,16 @@ namespace KERNEL.UI
 
         // Slow work (loading a model, building a sprite) runs one job per frame
         private static readonly Queue<Action<Action>> Jobs = new();
+
+        // Everything above belongs to one campaign: modded bodies, and so their art, can differ between campaigns.
+        // What's made here is destroyed and shipped art loaded from K.E.R.N.E.L's bundle is released, once the
+        // campaign it was for has gone (see EndCampaign)
+        private static readonly List<Object> Made = new();
+        private static readonly List<Texture2D> Loaded = new();
+        private static readonly List<Object> RetiredMade = new();
+        private static readonly List<Texture2D> RetiredLoaded = new();
+        // Counts campaigns; work started for an earlier one is dropped when it finishes
+        private static int _campaign;
         private static bool _busy;
         private static JobRunner _runner;
 
@@ -109,8 +122,10 @@ namespace KERNEL.UI
             }
 
             Pending[key] = new List<Action<Sprite>> { done };
+            int campaign = _campaign;
             void Finish(Sprite sprite)
             {
+                if (campaign != _campaign) return;
                 Cache[key] = sprite;
                 if (!Pending.TryGetValue(key, out List<Action<Sprite>> callbacks)) return;
                 Pending.Remove(key);
@@ -124,7 +139,11 @@ namespace KERNEL.UI
             {
                 if (hasShipped)
                 {
-                    GameManager.Instance.Assets.Load<Texture2D>(shipped, texture => Finish(texture != null ? ToSprite(texture) : null));
+                    GameManager.Instance.Assets.Load<Texture2D>(shipped, texture =>
+                    {
+                        if (texture != null) Loaded.Add(texture);
+                        Finish(texture != null ? ToSprite(texture) : null);
+                    });
                     return;
                 }
 
@@ -146,6 +165,45 @@ namespace KERNEL.UI
                     Enqueue(jobDone => Run(jobDone, () => Finish(ToSprite(Sphere(surface, pixels)))));
                 });
             });
+        }
+
+        /// <summary>
+        /// Lets go of a campaign's art as it unloads: nothing still waiting is handed its art (its views are being
+        /// torn down), work still under way is dropped when it finishes, and the next campaign starts from its own
+        /// bodies. The art itself is only set aside here, as the views being torn down still draw it until they're
+        /// gone; <see cref="FreeRetired"/> frees it once they are.
+        /// </summary>
+        public static void EndCampaign()
+        {
+            _campaign++;
+            Pending.Clear();
+            SurfaceWaiters.Clear();
+            Jobs.Clear();
+            Cache.Clear();
+            Silhouettes.Clear();
+            Surfaces.Clear();
+            StarLights.Clear();
+            RingProfiles.Clear();
+            RetiredMade.AddRange(Made);
+            Made.Clear();
+            RetiredLoaded.AddRange(Loaded);
+            Loaded.Clear();
+        }
+
+        /// <summary>
+        /// Frees the art set aside by <see cref="EndCampaign"/>: destroys what was made here and releases the
+        /// shipped art (once for each time it was loaded). Called once the next campaign is loading or has loaded,
+        /// when the views that drew it are long gone.
+        /// </summary>
+        public static void FreeRetired()
+        {
+            foreach (Object made in RetiredMade)
+                if (made != null) Object.Destroy(made);
+            RetiredMade.Clear();
+
+            foreach (Texture2D texture in RetiredLoaded)
+                if (texture != null) GameManager.Instance.Assets.ReleaseAsset(texture);
+            RetiredLoaded.Clear();
         }
 
         /// <summary>
@@ -217,7 +275,7 @@ namespace KERNEL.UI
             }
         }
 
-        // The surface map of a body's scaled-space texture, read once and kept
+        // The surface map of a body's scaled-space texture, read once a campaign and kept for it
         private static void GetSurface(string textureBody, Action<Color32[]> done)
         {
             if (Surfaces.TryGetValue(textureBody, out Color32[] cached))
@@ -233,8 +291,10 @@ namespace KERNEL.UI
             }
 
             SurfaceWaiters[textureBody] = new List<Action<Color32[]>> { done };
+            int campaign = _campaign;
             void Finish(Color32[] surface)
             {
+                if (campaign != _campaign) return;
                 Surfaces[textureBody] = surface;
                 List<Action<Color32[]>> callbacks = SurfaceWaiters[textureBody];
                 SurfaceWaiters.Remove(textureBody);
@@ -260,8 +320,9 @@ namespace KERNEL.UI
             }, Finish);
         }
 
-        // A star's light colour, read once and kept. It's the colour the game lights everything around the star
-        // with, authored on the star's scaled-space model (the Redux SDK's planet inspector writes it there too).
+        // A star's light colour, read once a campaign and kept for it. It's the colour the game lights everything
+        // around the star with, authored on the star's scaled-space model (the Redux SDK's planet inspector writes it
+        // there too).
         private static void GetStarLight(string star, Action<Color?> done)
         {
             if (StarLights.TryGetValue(star, out Color? cached))
@@ -270,12 +331,14 @@ namespace KERNEL.UI
                 return;
             }
 
+            int campaign = _campaign;
             ReadScaledPrefab<Color?>(star, prefab =>
             {
                 CelestialBodyLighting lighting = prefab != null ? prefab.GetComponentInChildren<CelestialBodyLighting>(true) : null;
                 return lighting?.Data != null ? lighting.Data.color : null;
             }, light =>
             {
+                if (campaign != _campaign) return;
                 StarLights[star] = light;
                 done(light);
             });
@@ -292,8 +355,8 @@ namespace KERNEL.UI
         /// </summary>
         public static ILogger Logger { get; set; }
 
-        // A ringed body's ring colours, read once and kept. Each ring on the scaled-space model has a texture running
-        // from its inner edge to its outer edge (u across the ring), read here as one row of colours
+        // A ringed body's ring colours, read once a campaign and kept for it. Each ring on the scaled-space model has
+        // a texture running from its inner edge to its outer edge (u across the ring), read here as one row of colours
         private static void GetRingProfiles(string body, Action<List<Color32[]>> done)
         {
             if (RingProfiles.TryGetValue(body, out List<Color32[]> cached))
@@ -302,6 +365,7 @@ namespace KERNEL.UI
                 return;
             }
 
+            int campaign = _campaign;
             ReadScaledPrefab(body, prefab =>
             {
                 var profiles = new List<Color32[]>();
@@ -311,6 +375,7 @@ namespace KERNEL.UI
                 return profiles;
             }, profiles =>
             {
+                if (campaign != _campaign) return;
                 RingProfiles[body] = profiles ?? new List<Color32[]>();
                 done(RingProfiles[body]);
                 RingColoursRead?.Invoke(body);
@@ -799,13 +864,20 @@ namespace KERNEL.UI
             return p;
         }
 
-        private static Texture2D NewTexture(int width, int height) =>
-            new(width, height, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+        private static Texture2D NewTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false)
+                { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            Made.Add(texture);
+            return texture;
+        }
 
         private static Sprite ToSprite(Texture2D texture)
         {
             texture.filterMode = FilterMode.Point;
-            return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            Made.Add(sprite);
+            return sprite;
         }
     }
 }

@@ -10,6 +10,10 @@ namespace KERNEL
     /// settings a page of its own). Declared the way Redux declares its own: entries in a localized section, each
     /// wrapped in a <see cref="ConfigValue{T}"/> with localized names and descriptions. Bound in OnPreInitialized,
     /// since the page is only made for mods whose settings exist when the menu is set up.
+    ///
+    /// They're kept per campaign, in SpaceWarp's campaign settings: changed from the pause menu, saved with the
+    /// campaign, and back to their defaults in a new one. Loading a campaign sets each of them, which raises the
+    /// same change events as changing them in the menu.
     /// </summary>
     public static class KernelSettings
     {

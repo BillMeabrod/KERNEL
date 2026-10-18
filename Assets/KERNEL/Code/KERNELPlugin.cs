@@ -35,6 +35,7 @@ namespace KERNEL
 
         private Sprite _toolbarIcon;
         private bool _assetsRequested;
+        private VisualTreeAsset _windowUxml;
 
         public override void OnPreInitialized()
         {
@@ -43,7 +44,7 @@ namespace KERNEL
 
             // The game gives a mod its own page in the settings menu only if its settings exist when the menu is
             // set up, which is before OnInitialized
-            KernelSettings.Bind(SWConfiguration);
+            KernelSettings.Bind(SWMetadata.CampaignConfigFile);
 
             // Generated planet art reads the bodies' surfaces while a save loads, not when the map opens. Redux
             // only runs the step in campaigns where K.E.R.N.E.L is switched on
@@ -63,14 +64,17 @@ namespace KERNEL
             // KERNEL's views bind show and hide through these, so they're registered before any view loads
             KernelConverters.Register();
             Ledger = gameObject.AddComponent<LedgerService>();
-            Ledger.Initialize(SWLogger);
-            Ledger.Rebuilt += roots => LedgerWindow?.ShowLedger(roots);
+            Ledger.Initialize(SWLogger, () => Enabled);
+            Ledger.Rebuilt += roots =>
+            {
+                if (LedgerWindow != null) LedgerWindow.ShowLedger(roots);
+            };
 
             // Showing or hiding spoilers changes what every view of the ledger shows
             KernelSettings.Changed += Ledger.Invalidate;
 
             Messages?.PersistentSubscribe<GameStateChangedMessage>(OnGameStateChanged);
-            Messages?.PersistentSubscribe<GameLoadFinishedMessage>(message => PrepareBodyArt.CheckRan(message, Enabled, SWLogger));
+            Messages?.PersistentSubscribe<GameLoadFinishedMessage>(OnGameLoadFinished);
 
             // The app bar buttons can be turned off; they come and go the next time a toolbar is built
             KernelSettings.ShowInAppBarChanged += shown =>
@@ -80,11 +84,14 @@ namespace KERNEL
             };
         }
 
-        // Loaded once, by the first campaign with K.E.R.N.E.L switched on; both stay for later campaigns
+        // Loaded once, by the first campaign with K.E.R.N.E.L switched on; both stay for later campaigns. The game
+        // builds its UI afresh for each campaign, taking the window with it, so the window is made again from the
+        // loaded layout when it's gone
         private void LoadWindow(System.Action done)
         {
             if (_assetsRequested)
             {
+                if (LedgerWindow == null && _windowUxml != null) CreateWindow(_windowUxml);
                 done();
                 return;
             }
@@ -98,6 +105,7 @@ namespace KERNEL
 
             Assets.Load<VisualTreeAsset>(WindowAddress, uxml =>
             {
+                _windowUxml = uxml;
                 CreateWindow(uxml);
                 Loaded();
             });
@@ -109,10 +117,14 @@ namespace KERNEL
             });
         }
 
-        // The next campaign may have K.E.R.N.E.L switched off. Redux's app bar hides the buttons itself there
+        // Lets go of the campaign before the game tears it down: the window closes, the ledger stops (so it isn't
+        // rebuilt from the half-unloaded game), and the planet art is set aside for the next campaign to free. The
+        // next campaign may have K.E.R.N.E.L switched off; Redux's app bar hides the buttons itself there
         public override void OnCampaignUnloading()
         {
-            LedgerWindow?.SetOpen(false);
+            if (LedgerWindow != null) LedgerWindow.SetOpen(false);
+            Ledger.Reset();
+            BodyArt.EndCampaign();
         }
 
         private void RegisterAppBarButtons()
@@ -121,13 +133,26 @@ namespace KERNEL
                 AppBarButtons.Register(SWMetadata.Guid, _toolbarIcon, SetWindowOpen);
         }
 
+        private void OnGameLoadFinished(MessageCenterMessage message)
+        {
+            PrepareBodyArt.CheckRan(message, Enabled, SWLogger);
+            // The last campaign's art, set aside as it unloaded, has nothing left drawing it now
+            BodyArt.FreeRetired();
+
+            // The window's loading step is placed after one of the game's by name, as the art's is (CheckRan warns
+            // when they drop out). If it didn't run, the window is loaded or made again now; the flight app tray has
+            // been built by then, so its button shows from the next flight
+            if (message is GameLoadFinishedMessage { IsSuccess: true } && Enabled && LedgerWindow == null)
+                LoadWindow(() => { });
+        }
+
         private void OnGameStateChanged(MessageCenterMessage message)
         {
             if (message is GameStateChangedMessage stateChanged)
             {
                 // Like stock windows, close when changing scene (building), including changes without a curtain
                 if (!(FlightStates.Contains(stateChanged.PreviousState) && FlightStates.Contains(stateChanged.CurrentState)))
-                    LedgerWindow?.SetOpen(false);
+                    if (LedgerWindow != null) LedgerWindow.SetOpen(false);
             }
         }
 
@@ -168,10 +193,11 @@ namespace KERNEL
             };
 
             PanelRenderer renderer = Window.Create(options, uxml).EnableUiSounds();
-            LedgerWindow = renderer.gameObject.AddComponent<LedgerWindowController>();
-            LedgerWindow.Initialize(renderer);
-            LedgerWindow.OpenChanged += isOpen => Ledger.SetShown(LedgerWindow, isOpen);
-            if (Ledger.Roots.Count > 0) LedgerWindow.ShowLedger(Ledger.Roots);
+            var window = renderer.gameObject.AddComponent<LedgerWindowController>();
+            window.Initialize(renderer);
+            window.OpenChanged += isOpen => Ledger.SetShown(window, isOpen);
+            if (Ledger.Roots.Count > 0) window.ShowLedger(Ledger.Roots);
+            LedgerWindow = window;
         }
 
         private Sprite CreateIcon(Texture2D texture, string address)

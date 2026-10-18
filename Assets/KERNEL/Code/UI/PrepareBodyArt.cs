@@ -31,6 +31,8 @@ namespace KERNEL.UI
             {
                 // As stock steps do, show what's happening on the loading bar
                 GameManager.Instance?.Game?.UI?.SetLoadingBarText(Localization.Translate(Localization.PreparingPlanetArt, StepName));
+                // Each campaign's art is made from its own bodies; the last campaign's is freed first
+                BodyArt.FreeRetired();
                 BodyArt.Preload(resolve);
             }
             catch (Exception e)
@@ -43,14 +45,15 @@ namespace KERNEL.UI
 
         /// <summary>
         /// Warns when a save finished loading without this step running though K.E.R.N.E.L is on. The step is
-        /// placed after another one by name, so if that name ever changes the step silently drops out. The map
-        /// still works, but has to read planet surfaces when it opens.
+        /// placed after another one by name, so if that name ever changes the step silently drops out, with the
+        /// window's step placed after the same one. The map still works, but has to read planet surfaces when it
+        /// opens, and the plugin loads the window once the save has loaded.
         /// </summary>
         public static void CheckRan(MessageCenterMessage message, bool enabled, ILogger logger)
         {
             if (message is GameLoadFinishedMessage { IsSuccess: true } && enabled && !_ran)
-                logger.LogWarning($"The '{StepName}' loading step didn't run: no loading step is named '{After}' any more. " +
-                                  "Planet art will be prepared when the system map opens instead.");
+                logger.LogWarning($"K.E.R.N.E.L's loading steps didn't run: no loading step is named '{After}' any more. " +
+                                  "Planet art will be prepared when the system map opens instead, and the ledger window loads after the save.");
             _ran = false;
         }
     }
