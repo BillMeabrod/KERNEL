@@ -120,7 +120,12 @@ namespace KERNEL.UI
             BodyArt.RingColoursRead += OnRingColoursRead;
         }
 
-        private void OnDestroy() => BodyArt.RingColoursRead -= OnRingColoursRead;
+        private void OnDestroy()
+        {
+            BodyArt.RingColoursRead -= OnRingColoursRead;
+            // Art still loading for this map is ignored when it arrives: its panel is being torn down
+            _layout++;
+        }
 
         // Ring colours are normally read while the save loads; if a shown body's arrive later, its rings were
         // drawn in the plain colours, so the map is drawn again
@@ -602,7 +607,7 @@ namespace KERNEL.UI
             parent.Add(button);
 
             // Art can arrive before the window has first been shown (and its panel attached), so it's kept unless
-            // this layout has been replaced since
+            // this layout has been replaced since, or the map destroyed (see OnDestroy)
             int layout = _layout;
             BodyArt.Request(body, size, art =>
             {

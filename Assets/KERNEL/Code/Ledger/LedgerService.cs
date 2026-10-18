@@ -19,6 +19,8 @@ namespace KERNEL.Ledger
 
         private ILogger _logger;
         private ScienceLedger _ledger;
+        // Whether K.E.R.N.E.L is switched on in the loaded campaign
+        private Func<bool> _isOn = () => true;
         private GalaxyOrbits _orbits;
         // Whatever is currently showing the ledger
         private readonly HashSet<object> _viewers = new();
@@ -54,9 +56,10 @@ namespace KERNEL.Ledger
             if (shown && _stale) Rebuild();
         }
 
-        public void Initialize(ILogger logger)
+        public void Initialize(ILogger logger, Func<bool> isOn)
         {
             _logger = logger;
+            _isOn = isOn;
             _ledger = new ScienceLedger(logger);
 
             if (Messages == null)
@@ -78,6 +81,10 @@ namespace KERNEL.Ledger
 
         private void OnGameLoadFinished(MessageCenterMessage message)
         {
+            // Nothing shows the ledger in a campaign with K.E.R.N.E.L switched off, so it isn't built there (the
+            // last campaign's was let go as it unloaded, see Reset)
+            if (!_isOn()) return;
+
             // Orbit parents and distances come from the save's galaxy definition, which only changes with the galaxy
             string galaxyKey = Game.SessionManager.ActiveGalaxyDefinitionKey;
             if (_orbits != null && _orbits.Key == galaxyKey)
@@ -101,6 +108,18 @@ namespace KERNEL.Ledger
 
                 Rebuild();
             });
+        }
+
+        /// <summary>
+        /// Lets go of the campaign as it unloads: nothing shows the ledger any more, and it isn't rebuilt until the
+        /// next campaign has loaded. Otherwise a view still showing it (the R&D page, if the player leaves from
+        /// there) has it rebuilt from the half-unloaded game, into views that are being destroyed.
+        /// </summary>
+        public void Reset()
+        {
+            _viewers.Clear();
+            _stale = false;
+            _orbits = null;
         }
 
         /// <summary>
