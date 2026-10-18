@@ -5,7 +5,7 @@
   "author": "Bill Meabrod",
   "description": "Kerbal Experimental Research & Navigation Electronic Ledger: track every science experiment by body and region, and see where science is left to gather.",
   "source": "https://github.com/BillMeabrod/KERNEL",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "version_check": "https://raw.githubusercontent.com/BillMeabrod/KERNEL/main/Assets/KERNEL/swinfo.json",
   "addressable_script_label": "KERNEL_patches",
   "addressable_prefab_patch_label": "KERNEL_prefab_patches",

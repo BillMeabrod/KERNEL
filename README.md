@@ -11,7 +11,7 @@ K.E.R.N.E.L keeps a ledger of every science experiment in your career.
 - **Ledger window.** Open it from Redux's app tray in flight or in the VAB, or with **Left Alt+K**, to browse experiments by celestial body and science region, and see what you've completed and where there's still science to gather.
 - **R&D page.** A K.E.R.N.E.L tab after the tech tiers slides the tree away to a starfield with a pixel-art map of the solar system. Pick a planet or moon to see its biomes and experiments in the sidebar, and the field report each experiment came back with.
 - **Modded planets.** Bodies added by planet mods appear on the map and in the ledger, with art generated from their own textures, rings from their ring data, and suns tinted by their star's light.
-- **Spoiler protection.** Biomes you haven't visited show as "?????" and experiments you haven't unlocked are hidden. Turn on **Show spoilers** in the game's settings, on the K.E.R.N.E.L page, to see everything.
+- **Spoiler protection.** Biomes you haven't visited show as "?????" and experiments you haven't unlocked are hidden. To see everything, turn on **Show spoilers** on the K.E.R.N.E.L page of the pause menu's settings. K.E.R.N.E.L's settings are kept per campaign.
 
 ## Screenshots
 
