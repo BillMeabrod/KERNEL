@@ -284,9 +284,10 @@ namespace KERNEL.UI
         {
             ShowLedger(false);
 
-            // As the stock R&D screen does: the game's input is already gone when quitting
+            // As the stock R&D screen does: unbound whenever the game is still there, leaving for the main menu
+            // included, so the input doesn't keep calling into this screen once it's gone
             GameInstance game = GameManager.Instance != null ? GameManager.Instance.Game : null;
-            if (game == null || game.ShutdownInProgress) return;
+            if (game?.InputManager == null) return;
             _input?.UnbindAction<float>(game.Input.RD.ScrollTechTree.name, OnScrollInput);
         }
 
